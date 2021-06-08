@@ -1,0 +1,11 @@
+commit b8aa8955c79d6b0e50ddbe7c979f8039154f27bd
+Author: Aleksandr Rekun <rekusha@gmail.com>
+Date:   Tue Jun 8 20:50:33 2021 +0300
+
+    add task1/status.txt with git status output before&after .gitignore
+
+commit adc23c3fca38dbeee578fa82a3f40920dbf3adb1
+Author: Aleksandr Rekun <rekusha@gmail.com>
+Date:   Tue Jun 8 20:45:37 2021 +0300
+
+    add .gitignore
