@@ -1,0 +1,29 @@
+commit 648f632f91d2ecbc9f5f713e9c54bcab5a2fe84a
+Author: Aleksandr Rekun <rekusha@gmail.com>
+Date:   Wed Jun 9 19:17:37 2021 +0300
+
+    remove ./log.txt for replays it to ./task1/log.txt
+
+commit acc5c3a35a4617feb423b703deb4982930a406e6
+Author: Aleksandr Rekun <rekusha@gmail.com>
+Date:   Tue Jun 8 21:20:33 2021 +0300
+
+    append new data to task1/status.txt
+
+commit 309ec3941cdb6bd859f2f25421627d82dc554a2e
+Author: Aleksandr Rekun <rekusha@gmail.com>
+Date:   Tue Jun 8 20:58:23 2021 +0300
+
+    add log.txt
+
+commit b8aa8955c79d6b0e50ddbe7c979f8039154f27bd
+Author: Aleksandr Rekun <rekusha@gmail.com>
+Date:   Tue Jun 8 20:50:33 2021 +0300
+
+    add task1/status.txt with git status output before&after .gitignore
+
+commit adc23c3fca38dbeee578fa82a3f40920dbf3adb1
+Author: Aleksandr Rekun <rekusha@gmail.com>
+Date:   Tue Jun 8 20:45:37 2021 +0300
+
+    add .gitignore
