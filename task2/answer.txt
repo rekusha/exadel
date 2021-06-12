@@ -1,0 +1,59 @@
+answer: http://3.67.187.64/
+
+процесс выполнения:
+
+0. регистрируемся на aws.amazon.com
+1. создаем пару ключей ssh
+2. создаем security group с открытыми портами 22, 80, 443, 3387 + ICMP для приема/ответа на пинг
+3. создаем машину с убунту сервером с дефодтными параметрами, кроме security group(используем созданную выше) и в Instance Details добавляем код для исполнения при первом запуске
+3.1 содержимое баш скрипта для первого запуска:
+	--//--
+	#!/bin/bash
+	sudo apt -y update
+	sudo apt -y install apache2
+	echo 'Hello World!<br>' > index.html
+	uname -a | awk 'BEGIN{FS=" "; OFS="<br>"; ORS="<br>"}{print $4,$2,$3}' >> ./index.html
+	apache2 -v | awk 'BEGIN{FS="\n"; ORS="<br>"}{print $1,$2}' >> ./index.html
+	sudo mv index.html /var/www/html/index.html
+	echo 'text of private key' > key.pem
+	sudo chmod 400 key.pem
+	--//--
+	этим мы устанавливаем апач на сервер и подменяем стандартный файл index.html на наш с приветствием и информацией о системе и вэб сервере
+	key.pem создается для подключения ко второй машине по ключу (быстро придумать как передать ключь на сервер безопаснее не придумал и созхдавать отдельный не стал потому как этот ключ по кмолчанию уже используется и для этой машины и будет для ново созданной)
+
+4. создаем дополнительный vpc (10.0.1.0/28) без ipv6 - потому как нет нужды лишние ресурсы иметь
+5. создаем подсеть 10.0.1.0/28 во вновь созданном vpc, а /28 потому как нам нужен небольшой пул адресов, а меньше aws не позволяет и vpc имеет ту же размерность
+6. создаем машину на виндовс указывая при создании созданные ранее подсеть, впс, секьюрити, ключи и скрипт для первого запуска
+6.1 содержимое баш скрипта для первого запуска:
+
+	<powershel>
+	Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+	Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0
+	Get-Service -Name ssh-agent | Set-Service -StartupType Automatic
+	Start-Service ssh-agent
+	Start-Service sshd
+	New-Item C:\ProgramData\ssh\administrators_authorized_keys
+	Set-Content C:\ProgramData\ssh\administrators_authorized_keys 'открытый ключ'
+	New-Item ~\.ssh\key.pem
+	Set-Content ~\.ssh\key.pem 'закрытый ключ'
+	icacls.exe ~\.ssh\key.pem /reset
+	icacls.exe ~\.ssh\key.pem /grant:r "$($env:username):(r)"
+	icacls.exe ~\.ssh\key.pem /inheritance:r
+	<powershel>
+  
+  устанавливаем openssh server/client
+  добавляем ссш агент в сервисы с автозапуском
+  в папку ssh агента ложим открытый ключик
+  в папку ~\.ssh ложим закрытый ключ и оставляем у файла ключа права на чтения только текущего пользователя (иначе ссш ругатся будет на неразборчивые связи)
+ 
+
+7. routetable делаем как нам надо:
+	- 10.0.1.0/28 local (скорее всего будет поумолчанию) это для локальной сети 
+	- 0.0.0.0/0 internet gateway (скорее всего дефолтный или создаем если надо) 
+	- х.х.х.х/х (подсеть дефолтная) на пиринг с первым дефолтным vpc (и апрувим пиринг)
+с этого момента обе машины должны видеть друг друга по внешним ip
+а windows машина должна пинговать убунту по приватному адресу
+
+8. routetable дефолтный (там где убунту) дополняем:
+	- 10.0.1.0/28 указываем на пиринг.
+ubuntu машина должна начать пинговать windows по приватному адресу
