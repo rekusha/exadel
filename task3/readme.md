@@ -6,8 +6,7 @@
 ## Tasks:
 1. Install docker. (Hint: please use VMs or Clouds  for this.) <br> **EXTRA** 1.1. Write bash script for install Docker 
  
-2. Find, download and run any docker container "hello world". (Learn commands and parameters to create/run docker containers.
-**EXTRA** 2.1. Use image with html page, edit html page and paste text: <Username> Sandbox 2021
+2. Find, download and run any docker container "hello world". (Learn commands and parameters to create/run docker containers.<br> **EXTRA** 2.1. Use image with html page, edit html page and paste text: <Username> Sandbox 2021
  
 3. 1. Create your Dockerfile for building a docker image. Your docker image should run any web application (nginx, apache, httpd). Web application should be located inside the docker image. <br> **EXTRA** 3.1.2. For creating docker image use clear basic images (ubuntu, centos, alpine, etc.)
    1. Add an environment variable "DEVOPS=<username> to your docker image<br> **EXTRA** 3.2.1. Print environment variable with the value on a web page (if environment variable changed after container restart - the web page must be updated with a new value)
