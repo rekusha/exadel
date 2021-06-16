@@ -1,0 +1,22 @@
+FROM ubuntu:20.04
+MAINTAINER Alexandr Rekun
+
+ENV TZ=Europe/Kiev
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+RUN apt-get update && apt-get install -y apache2
+
+ENV DEVOPS=rekusha
+RUN echo -e "Alexandr Rekun<br>Sandbox 2021<br>env DEVOPS = $DEVOPS" > index.html
+RUN mv index.html /var/www/html/index.html
+
+COPY task3mainproc.sh task3mainproc.sh
+RUN chmod a+x task3mainproc.sh
+COPY task3helperproc.sh task3helperproc.sh
+RUN chmod a+x task3helperproc.sh
+COPY task3wraperscript.sh task3wraperscript.sh
+RUN chmod a+x task3wraperscript.sh
+
+#CMD /bin/bash
+CMD ./task3wraperscript.sh
+
+EXPOSE 80
