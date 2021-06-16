@@ -1,0 +1,4 @@
+FROM openjdk:8
+ADD HelloWorld.class tmp/HelloWorld.class
+WORKDIR /tmp
+ENTRYPOINT ["java","HelloWorld"]

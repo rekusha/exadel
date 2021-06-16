@@ -31,6 +31,6 @@ sudo docker run -d --env DEVOPS=changed_value -p 8030:80 --name=task3 task3extra
 #docker push rekusha/rekusha/devopspractice
 #after all our docker container availible at addres https://hub.docker.com/repository/docker/rekusha/devopspractice
 
-### java helloworld build
-#sudo docker build -t japp -f java_app .
-#sudo docker run japp
+### java build
+sudo docker build -t japp -f java_app .
+sudo docker run japp
