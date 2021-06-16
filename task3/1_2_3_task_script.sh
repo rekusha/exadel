@@ -23,7 +23,14 @@ sudo docker run -d --env DEVOPS=changed_value -p 8030:80 --name=task3 task3extra
 #docker build -t task3extra -f task3dockerfile .
 #docker run -d --env DEVOPS=changed_value -p 8030:80 --name=task3 task3extra
 
-### task 4
+### task 4 (without extra)
+#docker login --username rekusha --password <password>
+## in this place mus be build from image like: "docker build -t task3extra -f task3dockerfile ." but it's doing in previos steps in task3
+#docker tag task3extra:latest rekusha/devopspractice
+#docker commit task3 rekusha/devopspractice
+#docker push rekusha/rekusha/devopspractice
+#after all our docker container availible at addres https://hub.docker.com/repository/docker/rekusha/devopspractice
+
 
 
 
