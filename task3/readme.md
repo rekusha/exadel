@@ -24,13 +24,14 @@ The task results is the docker/docker-compose files in your GitHub repository
 
  -------------------------
  answer:  
+
   task 1:  
    \# apt update  
    \# apt install docker   
    
   task 1.1  
-    \# ./docker_install.sh  
-    in docker_install.sh contains:  
+   \# ./docker_install.sh  
+   in docker_install.sh contains:  
 ```
 #!/bin/bash
 apt update
@@ -43,15 +44,24 @@ apt-get update && apt-get install docker-ce docker-ce-cli containerd.io -y
 
 systemctl start docker && systemctl enable docker
 ```
+
   task 2:  
-    docker run hello-world
+    docker run hello-world --name task2
+
   task 2.1:  
     ./task2extra.sh  
 ```
 #!/bin/bash
-sudo docker run -d --name task2 -p 8020:80 httpd
-TASK2CONTID=$(docker ps -aqf "name=task2")
+sudo docker run -d --name task21 -p 8021:80 httpd
+TASK2CONTID=$(docker ps -aqf "name=task21")
 sudo docker exec $TASK2CONTID sh -c "echo '<br>rekun alexandr<br>sandbox 2021' >> /usr/local/apache2/htdocs/index.html"
 ```
-   
+
+```
+$ curl http://127.0.0.1:8021 
+<html><body><h1>It works!</h1></body></html>
+<br>rekun alexandr<br>sandbox 2021
+```
  
+  task 3:  
+   
