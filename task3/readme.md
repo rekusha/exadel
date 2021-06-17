@@ -63,5 +63,16 @@ $ curl http://127.0.0.1:8021
 <br>rekun alexandr<br>sandbox 2021
 ```
  
-  task 3:  
-   
+  task 3.1/3.2:  
+    \# docker build -t task3extra -f task3dockerfile .  
+    \# docker run -d --env DEVOPS=changed_value -p 8030:80 --name=task3 task3extra
+```
+# docker ps
+CONTAINER ID   IMAGE        COMMAND                  CREATED          STATUS          PORTS                                   NAMES
+3c3ea0b629f7   task3extra   "/bin/sh -c ./task3w…"   12 seconds ago   Up 11 seconds   0.0.0.0:8030->80/tcp, :::8030->80/tcp   task3
+```
+```
+$ curl http://127.0.0.1:8030
+Alexandr Rekun<br>Sandbox 2021<br>env DEVOPS = changed_value
+```
+
