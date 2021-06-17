@@ -1,21 +1,21 @@
 version: '3'
 services:
   from_task4:
-    image: ${FROM_TASK4_IMAGE}
+    image: rekusha/devopspractice
     ports: 
       - 8050-8054:80
     restart: always
     links:
       - db
   java_task5:
-    image: ${JAVA_TASK5}
+    image: japp
     links:
       - from_task4
       - db
   db:
-    image: ${DB_IMAGE}
+    image: postgres:11.4-alpine
     container_name: postgres
     ports:
-      - ${DB_PORTS}
+      - 5432:5432
     volumes: 
-      - ${DB_VOLUMES}
+      - ./pgdata:/var/lib/postgresql/data/pgdata
