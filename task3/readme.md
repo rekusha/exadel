@@ -21,3 +21,37 @@
 
  
 The task results is the docker/docker-compose files in your GitHub repository
+
+ -------------------------
+ answer:  
+  task 1:  
+   \# apt update  
+   \# apt install docker   
+   
+  task 1.1  
+    \# ./docker_install.sh  
+    in docker_install.sh contains:  
+```
+#!/bin/bash
+apt update
+apt-get install apt-transport-https ca-certificates curl gnupg lsb-release -y
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+apt-get update && apt-get install docker-ce docker-ce-cli containerd.io -y
+
+systemctl start docker && systemctl enable docker
+```
+  task 2:  
+    docker run hello-world
+  task 2.1:  
+    ./task2extra.sh  
+```
+#!/bin/bash
+sudo docker run -d --name task2 -p 8020:80 httpd
+TASK2CONTID=$(docker ps -aqf "name=task2")
+sudo docker exec $TASK2CONTID sh -c "echo '<br>rekun alexandr<br>sandbox 2021' >> /usr/local/apache2/htdocs/index.html"
+```
+   
+ 
