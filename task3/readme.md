@@ -82,7 +82,7 @@ Alexandr Rekun<br>Sandbox 2021<br>env DEVOPS = changed_value
     новый акк на докер хабе ругается и не хочет даром делать ничего  
     {"error": "Automated Build only available on a Pro or Team plan"}  
   
-  task5:  
+  task5.1:  
  \# docker build -t japp -f java_app .    
  \# docker-compose --compatibility up -d  
  
