@@ -1,21 +1,23 @@
+
 version: '3'
 services:
   from_task4:
     image: ${FROM_TASK4_IMAGE}
-    ports: 
+    ports:
       - 8050-8054:80
     restart: always
-    links:
-      - db
+    depends_on:
+      - "db"
   java_task5:
     image: ${JAVA_TASK5}
+    deploy:
+      mode: replicated
+      replicas: 5
     links:
-      - from_task4
-      - db
+      - "from_task4"
+      - "db"
   db:
     image: ${DB_IMAGE}
     container_name: postgres
     ports:
       - ${DB_PORTS}
-    volumes: 
-      - ${DB_VOLUMES}
