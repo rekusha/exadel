@@ -75,4 +75,24 @@ CONTAINER ID   IMAGE        COMMAND                  CREATED          STATUS    
 $ curl http://127.0.0.1:8030
 Alexandr Rekun<br>Sandbox 2021<br>env DEVOPS = changed_value
 ```
-
+  task 4:  
+    \# docker pull rekusha/devopspractice  
+  
+  task4.1:  
+    новый акк на докер хабе ругается и не хочет даром делать ничего  
+    {"error": "Automated Build only available on a Pro or Team plan"}  
+  
+  task5:  
+ \# docker build -t japp -f java_app .    
+ \# docker-compose --compatibility up -d  
+ 
+```
+Creating network "5_default" with the default driver
+Creating postgres ... done
+Creating 5_from_task4_1 ... done
+Creating 5_java_task5_1 ... done
+Creating 5_java_task5_2 ... done
+Creating 5_java_task5_3 ... done
+Creating 5_java_task5_4 ... done
+Creating 5_java_task5_5 ... done
+```
