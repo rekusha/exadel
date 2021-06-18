@@ -1,0 +1,25 @@
+---
+- name: install docker in all instance
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: install aptitude using apt
+      apt: name=aptitude state=latest update_cache=yes force_apt_get=yes
+
+    - name: install required packages
+      apt: name={{ item }} state=latest update_cache=yes
+      loop: [ 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common']
+
+    - name: gpg apt key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: add docker repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu bionic stable
+        state: present
+
+    - name: update apt and install docker-ce
+      apt: update_cache=yes name=docker-ce state=latest
