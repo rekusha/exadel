@@ -17,3 +17,35 @@
    **EXTRA 3.**  Для исполнения плейбуков должны использоваться dynamic inventory (GALAXY можно)  
   
 Результатом выполнения данного задания  являются ansible файлы в вашем GitHub.   
+
+------
+
+1. установка ansible
+```
+sudo apt-add-repository ppa:ansible/ansible && sudo apt-get update && sudo apt-get install -y ansible  
+
+mkdir ansible
+mkdir ansible/keys # положить нужные ключи
+chmod 400 ansible/keys/key_name.pem
+
+printf '[aws]\ninstance1 ansible_host=3.127.64.37 ansible_user=ubuntu ansible_private_key_file=/home/ubuntu/ansible/keys/ssh_key.pem\ninstance2 ansible_host=18.193.127.247 ansible_user=ubuntu ansible_private_key_file=/home/ubuntu/ansible/keys/ssh_key.pem' > ansible/hosts.txt
+
+ubuntu@ip-172-31-7-51:~/$ ansible/ansible -i hosts.txt all -m ping
+instance2 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+instance1 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+```
+
+2.
+
