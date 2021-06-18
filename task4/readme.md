@@ -23,7 +23,10 @@
 1. установка ansible
 ```
 sudo apt-add-repository ppa:ansible/ansible && sudo apt-get update && sudo apt-get install -y ansible  
+```
 
+2.
+```
 mkdir ansible
 mkdir ansible/keys # положить нужные ключи
 chmod 400 ansible/keys/key_name.pem
@@ -47,5 +50,5 @@ instance1 | SUCCESS => {
 }
 ```
 
-2.
+3.
 
