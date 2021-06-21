@@ -83,3 +83,107 @@ instance1 | SUCCESS => {
 ```
 
 $ ansible-playbook -i hosts.txt playbooks/without_extra.yaml
+
+```
+$ ansible-playbook -i hosts.txt with_extra.yaml 
+
+
+PLAY [install docker in all instance] ************************************************************************************
+
+TASK [Gathering Facts] ***************************************************************************************************
+ok: [ununtu_local]
+
+TASK [install aptitude using apt] ****************************************************************************************
+changed: [ununtu_local]
+
+TASK [install required packages] *****************************************************************************************
+changed: [ununtu_local] => (item=apt-transport-https)
+ok: [ununtu_local] => (item=ca-certificates)
+ok: [ununtu_local] => (item=curl)
+changed: [ununtu_local] => (item=software-properties-common)
+
+TASK [gpg apt key] *******************************************************************************************************
+changed: [ununtu_local]
+
+TASK [add docker repository] *********************************************************************************************
+changed: [ununtu_local]
+
+TASK [update apt and install docker-ce] **********************************************************************************
+changed: [ununtu_local]
+
+PLAY RECAP ***************************************************************************************************************
+ununtu_local               : ok=6    changed=5    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+```
+
+
+
+--------------------------------------------------------------------------------------------------------------------------
+--EXTRAS_1--
+--------------------------------------------------------------------------------------------------------------------------
+add some packages to install in section with name 'install required packages' in our without_extra.yaml file
+'python3-pip', 'virtualenv', 'python3-setuptools'
+
+and add instructions for create and run docker containers with lamp
+
+- name: docker module for python install
+      pip:
+        name: docker
+
+    - name: httpd container
+      docker_container:
+        name: apache
+        image: httpd
+        ports: ['80:80']
+
+    - name: mysql container
+      docker_container:
+        name: mysql
+        image: mysql
+        ports: ['3306:3306']
+        hostname: mysql
+        env:
+          MYSQL_ROOT_PASSWORD: "{{ task5mysql_root_password }}"
+          MYSQL_USER: task5mysql
+          MYSQL_PASSWORD: "{{ task5mysql_password }}"
+          MYSQL_DATABASE: TASK5TESTDB
+
+    - name: phpmyadmin container
+      docker_container:
+        name: phpmyadmin
+        image: phpmyadmin
+        ports: ['81:80']
+        env:
+          PMA_HOST: "{{ task5_phpmyadmin_db_ip }}"
+          PMA_USER: root
+          PMA_PASSWORD: "{{ task5_phpmyadmin_password }}"
+
+
+--------------------------------------------------------------------------------------------------------------------------
+--EXTRAS_2--
+--------------------------------------------------------------------------------------------------------------------------
+create file vars/vars.yaml with credentionals and vars
+after file save and ready, encrypt them with command 'ansible-vault encrypt vars/vars.yaml'
+afer it in vars.yaml we have something like this:
+
+$ANSIBLE_VAULT;1.1;AES256
+63303765343235616164366564306163353639333033326566316464333761663765666432343463
+3235616634346564373133396234363363363063336435620a366331336536333763356533333938
+64376662313430346662333961356639396566356264306132613765323362303031386466663364
+3664336234636165630a663334653839313635346530343937343334383331663562363933623234
+61363965383434366138316437353334643138646633343332613030323364613236646138356339
+34636437306538323633353934306430626561653761633733333666653039313164316563363262
+36356462623438303635623638663138323738333833363466303763393962613734396333353061
+63333133386566636366306437636464653835363664303361373964386534623632313136613631
+62633436303337636333386630316334633862373836396265666336363661386535663135663133
+30616439346463326639376339333761643333386161366431373431626564616264343834383765
+30393265663935316431383963626631346330313435393831323738343231323366613461663136
+64336562373466363733
+
+to use this file with ansible need add option '--ask-vault-pass' to command line
+or you can create temporary file with password and use '--vault-password-file <filename>' option
+
+--------------------------------------------------------------------------------------------------------------------------
+--EXTRAS_3--
+--------------------------------------------------------------------------------------------------------------------------
+
+

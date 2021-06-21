@@ -1,0 +1,59 @@
+---
+- name: install docker in all instance
+  hosts: all
+  become: yes
+  vars_files:
+   - vars/vars.yaml
+
+  tasks:
+    - name: install aptitude using apt
+      apt: name=aptitude state=latest update_cache=yes force_apt_get=yes
+
+    - name: install required packages
+      apt: name={{ item }} state=latest update_cache=yes
+      loop: [ 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common', 'python3-pip', 'virtualenv', 'python3-setuptools']
+
+    - name: gpg apt key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: add docker repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu bionic stable
+        state: present
+
+    - name: update apt and install docker-ce
+      apt: update_cache=yes name=docker-ce state=latest
+# <---------------------------------
+    - name: docker module for python install
+      pip:
+        name: docker
+
+    - name: httpd container
+      docker_container:
+        name: apache
+        image: httpd
+        ports: ['80:80']
+
+    - name: mysql container
+      docker_container:
+        name: mysql
+        image: mysql
+        ports: ['3306:3306']
+        hostname: mysql
+        env:
+          MYSQL_ROOT_PASSWORD: "{{ task5mysql_root_password }}"
+          MYSQL_USER: task5mysql
+          MYSQL_PASSWORD: "{{ task5mysql_password }}"
+          MYSQL_DATABASE: TASK5TESTDB
+
+    - name: phpmyadmin container
+      docker_container:
+        name: phpmyadmin
+        image: phpmyadmin
+        ports: ['81:80']
+        env:
+          PMA_HOST: "{{ task5_phpmyadmin_db_ip }}"
+          PMA_USER: root
+          PMA_PASSWORD: "{{ task5_phpmyadmin_password }}"
