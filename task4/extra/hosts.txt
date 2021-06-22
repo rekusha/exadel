@@ -1,2 +1,7 @@
 [local]
-ununtu_local ansible_host=192.168.0.210 ansible_user=rekusha ansible_private_key_file=/home/rekusha/git/exadel/task4/extra
+task4_ununtu_local ansible_host=192.168.0.210 ansible_user=rekusha ansible_private_key_file=/home/rekusha/git/exadel/task4/extra
+
+[ec2]
+task4-main    ansible_host=18.184.18.85 ansible_user=ubuntu ansible_private_key_file=/home/rekusha/git/keys/ec2.pem
+task4-client1 ansible_host=35.159.12.18 ansible_user=ubuntu ansible_private_key_file=/home/rekusha/git/keys/ec2.pem
+task4-client2 ansible_host=3.66.211.75 ansible_user=ubuntu ansible_private_key_file=/home/rekusha/git/keys/ec2.pem

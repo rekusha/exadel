@@ -120,11 +120,11 @@ ununtu_local               : ok=6    changed=5    unreachable=0    failed=0    s
 --------------------------------------------------------------------------------------------------------------------------
 --EXTRAS_1--
 --------------------------------------------------------------------------------------------------------------------------
-add some packages to install in section with name 'install required packages' in our without_extra.yaml file
-'python3-pip', 'virtualenv', 'python3-setuptools'
+add some packages to install in section with name 'install required packages' in our without_extra.yaml file  
+'python3-pip', 'virtualenv', 'python3-setuptools'  
 
-and add instructions for create and run docker containers with lamp
-
+and add instructions for create and run docker containers with lamp  
+```
 - name: docker module for python install
       pip:
         name: docker
@@ -156,14 +156,14 @@ and add instructions for create and run docker containers with lamp
           PMA_HOST: "{{ task5_phpmyadmin_db_ip }}"
           PMA_USER: root
           PMA_PASSWORD: "{{ task5_phpmyadmin_password }}"
-
+```
 
 --------------------------------------------------------------------------------------------------------------------------
 --EXTRAS_2--
 --------------------------------------------------------------------------------------------------------------------------
-create file vars/vars.yaml with credentionals and vars
-after file save and ready, encrypt them with command 'ansible-vault encrypt vars/vars.yaml'
-afer it in vars.yaml we have something like this:
+create file vars/vars.yaml with credentionals and vars  
+after file save and ready, encrypt them with command 'ansible-vault encrypt vars/vars.yaml'  
+afer it in vars.yaml we have something like this:  
 
 $ANSIBLE_VAULT;1.1;AES256
 63303765343235616164366564306163353639333033326566316464333761663765666432343463
@@ -179,11 +179,65 @@ $ANSIBLE_VAULT;1.1;AES256
 30393265663935316431383963626631346330313435393831323738343231323366613461663136
 64336562373466363733
 
-to use this file with ansible need add option '--ask-vault-pass' to command line
-or you can create temporary file with password and use '--vault-password-file <filename>' option
+to use this file with ansible need add option '--ask-vault-pass' to command line  
+or you can create temporary file with password and use '--vault-password-file <filename>' option  
 
 --------------------------------------------------------------------------------------------------------------------------
 --EXTRAS_3--
 --------------------------------------------------------------------------------------------------------------------------
+```
+export AWS_ACCESS_KEY_ID='secretkey'
+export AWS_SECRET_ACCESS_KEY='secretacceskey'
+pip install boto3
 
+```
 
+ansible.cfg
+```
+[defaults]
+host_key_checking = false
+
+[inventory]
+enable_plugins = host_list, script, auto, yaml, ini, toml
+```
+
+aws_ec2.yml
+```
+---
+plugin: amazon.aws.aws_ec2
+regions:
+  - eu-central-1
+keyed_groups:
+  - key: tags.Name
+  - key: tags.Group
+filters:
+  instance-state-name : running
+compose:
+  ansible_host: public_ip_address
+```
+
+/exadel/task4/extra/3$ ansible -i aws_ec2.yml all -m ping -u ubuntu --private-key /home/rekusha/git/keys/ec2.pem
+```
+ec2-35-159-12-18.eu-central-1.compute.amazonaws.com | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+ec2-18-184-18-85.eu-central-1.compute.amazonaws.com | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+ec2-3-66-211-75.eu-central-1.compute.amazonaws.com | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+
+```
