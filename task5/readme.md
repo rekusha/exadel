@@ -46,7 +46,7 @@ services:
   restart: always
 ```
 $ mkdir jenkins_home  
-$ sudo chown -R 1000:1000 ./jenkins_home/
+$ sudo chown -R 1000:1000 ./jenkins_home/  
 $ tree  
 ```
 .
@@ -80,15 +80,20 @@ Please use the following password to proceed to installation:
 This may also be found at: /var/jenkins_home/secrets/initialAdminPassword
 ```
 enter this string to field in web page to continue  
-   
+  
+Create First Admin User:  
+   name Jenkins_admin1
+   password <Password>
+   email email@email.email  
+
 -----   
-2. install plugins (if need)
+2. install plugins (if need)  
 ```
 install suggest plugin (by default, yet) 
 ```
    
 -----   
-3. configure a few build agents
+3. configure a few build agents  
 ```
 
 ```
