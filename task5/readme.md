@@ -43,6 +43,7 @@ services:
   #network_mode: host
   ports:
   - 8080:8080
+  - 50000:50000
   restart: always
 ```
 $ mkdir jenkins_home  
@@ -65,12 +66,12 @@ d960726af2be: Pull complete
 ...
 Digest: sha256:99fd3cb74257d1df7678c19106586a2da127cd1b08484c9201c7130d4fab92c1
 Status: Downloaded newer image for jenkins/jenkins:lts
-Creating task5 ... done
+Creating jenkins_lts ... done
 ```
 next go in web browser to addres http://<youJenkinsServerIp>:8080/  
 and see "To ensure Jenkins is securely set up by the administrator, a password has been written to the log (not sure where to find it?) and this file on the server:"  
    
-$ sudo docker logs task5  
+$ sudo docker logs jenkins_lts  
 ```
 Jenkins initial setup is required. An admin user has been created and a password generated.
 Please use the following password to proceed to installation:
@@ -82,18 +83,28 @@ This may also be found at: /var/jenkins_home/secrets/initialAdminPassword
 enter this string to field in web page to continue  
   
 Create First Admin User:  
-   name Jenkins_admin1
-   password <Password>
-   email email@email.email  
+   name Jenkins_admin1  
+   password <Password>  
+   email email@email.email    
 
 -----   
-2. install plugins (if need)  
-```
-install suggest plugin (by default, yet) 
-```
-   
+2. install plugin:  
+"Manage Jenkins" -> "Manage Plugins" -> "Available" -> "Docker"  
 -----   
-3. configure a few build agents  
+   
+#generate ssh-key pair for agents
+```
+ssh-keygen -f ~/.ssh/jenkins_agent_key
+```
+manage jenkins -> manage Credentials -> Add Credentials  
+Kind: SSH Username with private key;  
+id: jenkins  
+description: The jenkins ssh key  
+username: jenkins  
+Private Key: select Enter directly and press the Add button to insert your private key from ~/.ssh/jenkins_agent_key  
+   
+3. configure a few build agents 
+   
 ```
 
 ```
