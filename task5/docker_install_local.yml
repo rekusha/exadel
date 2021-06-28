@@ -1,0 +1,61 @@
+---
+- name: install docker in localhost
+  hosts: localhost
+  become: yes
+
+  tasks:
+    - name: install aptitude using apt
+      apt: name=aptitude state=latest update_cache=yes force_apt_get=yes
+
+    - name: install required packages
+      apt: name={{ item }} state=latest update_cache=yes
+      loop: [ 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common', 'python3-pip', 'virtualenv', 'python3-setuptools', 'default-jdk']
+
+    - name: gpg apt key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: add docker repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu bionic stable
+        state: present
+
+    - name: update apt and install docker-ce
+      apt: update_cache=yes name=docker-ce state=latest
+
+    - name: docker module for python install
+      pip:
+        name: docker
+
+    - name: ensure jenkins directory on docker host
+      file:
+        state: directory
+        owner: 1000
+        group: 1000
+        path: /share/jenkins
+
+    - name: pull the latest official jenkins docker image
+      docker_image:
+        name: "jenkins/jenkins:latest"
+
+    - name: create a container from the jenkins docker image
+      docker_container:
+        name: "jenkins-server"
+        image: "jenkins/jenkins"
+        ports:
+            - "8080:8080"
+            - "50000:50000"
+        volumes:
+            - "/share/jenkins:/var/jenkins_home"
+        state: present
+        recreate: no
+
+    - name: copy systemd service script to start and stop the jenkins container
+      copy: src=files/jenkins.service dest=/etc/systemd/system
+
+    - name: restart docker
+      shell: systemctl restart jenkins
+
+    - name: service jenkins service
+      shell: systemctl enable jenkins
