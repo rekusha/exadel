@@ -1,0 +1,6 @@
+[instance]
+instance1 ansible_host=192.168.0.217 ansible_user=rekusha ansible_private_key_file=~/.ssh/jenkins_agent_key
+instance2 ansible_host=192.168.0.220 ansible_user=rekusha ansible_private_key_file=~/.ssh/jenkins_agent_key
+
+[cloud]
+cloud1 ansible_host=192.168.0.223 ansible_user=rekusha ansible_private_key_file=~/.ssh/jenkins_agent_key
