@@ -56,14 +56,25 @@ id: hosts
 description: hosts ssh key  
 username: <username>  
 Private Key: select Enter directly and press the Add button to insert your private key from ~/.ssh/hosts_agent_key  
-   
-создаем еще пару ключей для агентов и тоже добавляем в кредейншиалы  
-
+    
+создаем еще пару ключей для агентов и тоже добавляем в кредейншиалы   
+  
 в дженкинсе конфигурируем подключение ко всем хостам (host_server, agent_server1, agent_server2, docker_cloud)   
-в данный момент у нас исполнители есть на 4х хостах + внутри мастер контейнера с дженкинсом (последнее желательно отключить чтоб ресурсы не распылять)
+в данный момент у нас исполнители есть на 4х хостах + внутри мастер контейнера с дженкинсом (последнее желательно отключить чтоб ресурсы не распылять)  
    
 заранее написанным плейбуком docker_install_instance.yml на инстансах (сервер1 и сервер2) ставятся ява + докер  
 заранее написанным плейбуком docker_install_instance.yml на docker-cloud ставятся ява + докер  
    
-делаем простой 
-  
+на машине docker-cloud  
+вносим инебольшие изменения в конфигурацию докера  
+sudo nano /lib/systemd/system/docker.service  
+
+и в строке ExecStart добавляем -H=tcp://0.0.0.0:2375 чтоб получилось что то похожее на ExecStart=/usr/bin/dockerd -H=fd:// -H=tcp://0.0.0.0:2375 ...  
+сохраняем изменения и выходим  
+перезапускаем докер демона $ sudo systemctl daemon-reload  
+перезапускаем сам докер $ sudo service docker restart  
+если все верно сделано то curl http://localhost:2375/images/json отдаст нам в ответ [] если нет образов, иначе даста инфу по образам в json формате  
+на машине docker-cloud на этом настройка закончена  
+   
+agent_server1 и agent_server2 готовы сразу после выполнения на них действий ансиблом (см. выше)  
+   
