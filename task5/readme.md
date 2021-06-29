@@ -732,3 +732,80 @@ PASSWORD = ******** Mask Passwords
 PASSWORD1 = NotASecret Without Mask Passwords
 Finished: SUCCESS
 ```
+   
+----------------
+   
+   ## EXTRA:  
+1. Написать pipeline который будет на дополнительной виртуальной машине запускать докер контейнер из вашего докерфайла.   
+   сделано в основной части  
+   
+2. Написать ансибл скрипт который будет разворачивать дженкинс.  
+   сделано в основной части  
+   
+3. Развернуть локальный docker registry загрузить в него докер образ, выгрузить докер образ из docker registry и запустить контейнер на окружении (с использованием Jenkinsfile) 
+   
+```
+sudo docker run -d -p 5000:5000 --restart=always --name doc-rep registry:2
+```
+   - скачается образ и запустится на 5000 порту с автоматическим перезапуском при старте докера. все в минимальной конфигурации репозиторий развернут  
+  
+sudo docker tag <myimagename> <host ip>:5000/<myimagename:v1>  - добавляем тэг для локального образа. формат тэга  
+   
+[docker tag <имя локального образа> <repositori ip|name>:port/<имя как будет хранится в репозитории>:<доп тэг для версионности>]  
+после присвоения тэга локальному образу можно его пушить в репозиторий  
+```
+sudo docker push 192.168.0.221:5000/<myimagename>
+```
+в ответ имеем
+```
+The push refers to repository [192.168.0.221:5000/myimagename]
+Get https://192.168.0.221:5000/v2/: http: server gave HTTP response to HTTPS client
+```
+ЕСЛИ надо (мне надо) разрешить http без секъюра то:
+```
+sudo nano /etc/docker/daemon.json
+{
+    "insecure-registries": ["192.168.0.19:5000"]
+}
+
+sudo systemctl restart docker
+```
+снова пушим
+```
+sudo docker push 192.168.0.221:5000/<myimagename>
+The push refers to repository [192.168.0.19:5000/microsevice_v1]
+042a80566ff4: Layer already exists
+d7994f7c0aa0: Layer already exists
+13cb14c2acd3: Layer already exists
+latest: digest: sha256:0aef9e0f6891b6b83ef62beeb6a97247fc9bd1057fba91476fea834b781eac2f size: 1203
+```
+  
+посмотреть список images в репозитории можно воспользоваться curl или браузером:  
+```
+curl -X GET http://192.168.0.221:5000/v2/_catalog 
+```
+в ответ имеем json со списком образов в репозитории  
+
+теперь в Dockefile указываем 'FROM 192.168.0.221:5000/<myimagename>' чтобы при сборке образ брался из нашего репозитория  
+   
+4. Настроить двухстороннюю интеграцию между Jenkins и вашим Git репозиторием. Jenkins проект будет запускаться автоматически при наличии изменений в вашем репозитории а также в Git будет виден статус последней сборки из дженкинса (успешно/неуспешно/в процессе).  
+
+   понадобится доустановить плагины   
+   Embeddable Build Status   
+   Role-based Authorization Strategy   
+   Authorize Project   
+     
+   далее в "настройки дженкинс" - "глобальные настроки безопасности" - "авторизация"  
+   указываем "матричное распределение прав" и в появившейся таблице пользователей выставляем права аутентифицированных пользователей в административные, анонимным пользователям указываем только "ViewStatus"  
+     
+   после всего проделанного идем в свой репозиторий github, выбираем Settings - Webhooks - Add webhook и заполняем адрес, формат и при каких событиях гит будет нам слать хуки  
+   http://178.159.233.40:12200/github-webhook/  
+   application/json  
+   just the push event  
+   active (галочку ставим)  
+   
+   в дженкинсе при создании пайплайна указываем два чекбокса  
+   GitHub project (указываем урл проекта 'git@github.com:rekusha/exadel.git')  
+   GitHub hook trigger for GITScm polling 
+   
+   
