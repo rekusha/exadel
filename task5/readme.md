@@ -859,6 +859,32 @@ pipeline {
    в теле проекта пишем наш код (в моем случае долго думал и выдал 'sh -c date')
    сохраняем все это и из пункта Embeddable Build Status вставляем ссылку статуса в нужное нам место чтоб отображался значек статуса проекта (с изменениями под наш конкретный случай)  
    
+   в логе исполнения имеем
+   ```
+Started by GitHub push by rekusha
+Running as SYSTEM
+Building remotely on agent1-slave-host-2 (agent agent1-slave-host-1) in workspace /home/jenkins/workspace/extra4
+The recommended git tool is: NONE
+No credentials specified
+ > git rev-parse --resolve-git-dir /home/jenkins/workspace/extra4/.git # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url https://github.com/rekusha/exadel/ # timeout=10
+Fetching upstream changes from https://github.com/rekusha/exadel/
+ > git --version # timeout=10
+ > git --version # 'git version 2.17.1'
+ > git fetch --tags --progress -- https://github.com/rekusha/exadel/ +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/master^{commit} # timeout=10
+Checking out Revision 54c14ecaf16285aa7749701d2e34d31258d00942 (refs/remotes/origin/master)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 54c14ecaf16285aa7749701d2e34d31258d00942 # timeout=10
+Commit message: "Update readme.md"
+ > git rev-list --no-walk 23efdd7c0f879b5a8f04a473a9dc32198e4f983f # timeout=10
+[extra4] $ /bin/sh -xe /tmp/jenkins7230503939386347440.sh
++ sh -c date
+Tue Jun 29 13:01:21 UTC 2021
+Finished: SUCCESS
+   ```
+   
    <a href='http://178.159.233.40:12200/job/extra4/'><img src='http://178.159.233.40:12200/buildStatus/icon?job=extra4'></a>
    
    
