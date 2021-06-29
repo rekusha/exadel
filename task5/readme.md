@@ -860,7 +860,7 @@ pipeline {
    сохраняем все это и из пункта Embeddable Build Status вставляем ссылку статуса в нужное нам место чтоб отображался значек статуса проекта (с изменениями под наш конкретный случай)  
    
    в логе исполнения имеем
-   ```
+```
 Started by GitHub push by rekusha
 Running as SYSTEM
 Building remotely on agent1-slave-host-2 (agent agent1-slave-host-1) in workspace /home/jenkins/workspace/extra4
@@ -883,7 +883,7 @@ Commit message: "Update readme.md"
 + sh -c date
 Tue Jun 29 13:01:21 UTC 2021
 Finished: SUCCESS
-   ```
+```
    
    <a href='http://178.159.233.40:12200/job/extra4/'><img src='http://178.159.233.40:12200/buildStatus/icon?job=extra4'></a>
    
