@@ -805,7 +805,11 @@ curl -X GET http://192.168.0.221:5000/v2/_catalog
    active (галочку ставим)  
    
    в дженкинсе при создании пайплайна указываем два чекбокса  
-   GitHub project (указываем урл проекта 'git@github.com:rekusha/exadel.git')  
+   GitHub (указываем урл проекта 'git@github.com:rekusha/exadel.git')  
    GitHub hook trigger for GITScm polling 
+   в теле проекта пишем наш код (в моем случае долго думал и выдал 'sh -c date')
+   сохраняем все это и из пункта Embeddable Build Status вставляем ссылку статуса в нужное нам место чтоб отображался значек статуса проекта (с изменениями под наш конкретный случай)  
+   
+   <a href='http://178.159.233.40:12200/job/extra4/'><img src='http://178.159.233.40:12200/buildStatus/icon?job=extra4'></a>
    
    
