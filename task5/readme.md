@@ -765,7 +765,7 @@ Get https://192.168.0.221:5000/v2/: http: server gave HTTP response to HTTPS cli
 ```
 sudo nano /etc/docker/daemon.json
 {
-    "insecure-registries": ["192.168.0.19:5000"]
+    "insecure-registries": ["192.168.0.221:5000"]
 }
 
 sudo systemctl restart docker
@@ -787,6 +787,55 @@ curl -X GET http://192.168.0.221:5000/v2/_catalog
 в ответ имеем json со списком образов в репозитории  
 
 теперь в Dockefile указываем 'FROM 192.168.0.221:5000/<myimagename>' чтобы при сборке образ брался из нашего репозитория  
+   
+   Jenkins_extra_3 - пайплайн для всего выше описанного + создание и запуск контейнера из локального репозитория
+```
+pipeline {
+    agent { label 'slave-host' }
+
+    stages {
+        stage('create doc_rep repository') {
+            steps {
+                sh'''
+                    docker run -d -p 5000:5000 --restart=always --name doc_rep registry:2
+                '''
+            }
+        }
+        stage('pull test image'){
+            steps{
+                sh'''
+                    docker pull hello-world
+                '''
+            }
+        }
+        stage('push image to doc_rep (local repository)'){
+            steps{
+                sh'''
+                    docker tag hello-world 192.168.0.221:5000/hello-world_v1
+                    docker push 192.168.0.221:5000/hello-world_v1
+                    docker rmi hello-world
+                    docker rmi 192.168.0.221:5000/hello-world_v1
+                '''
+            }
+        }
+        stage('pull from doc_rep (local repository)'){
+            steps{
+                sh'''
+                    docker pull 192.168.0.221:5000/hello-world_v1
+                    docker images
+                '''
+            }
+        }
+        stage('deploy test image'){
+            steps{
+                sh'''
+                    docker run --rm -d --name test_deploy 192.168.0.221:5000/hello-world_v1
+                '''
+            }
+        }
+    }
+}
+```
    
 4. Настроить двухстороннюю интеграцию между Jenkins и вашим Git репозиторием. Jenkins проект будет запускаться автоматически при наличии изменений в вашем репозитории а также в Git будет виден статус последней сборки из дженкинса (успешно/неуспешно/в процессе).  
 
