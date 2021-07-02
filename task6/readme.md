@@ -23,12 +23,12 @@
 ------------------
 
 1. Развернуть в облаке контейнер с базой данных SQL (MySQL or PostgreSQL)  
-   wget https://raw.githubusercontent.com/rekusha/exadel/master/task3/1.1/docker_install.sh 
-   chmod +x docker_install.sh
-   sudo ./docker_install.sh
-   
-   sudo docker run --name task6-mysql -e MYSQL_ROOT_PASSWORD=$DBPASSWORD -d --rm -p 3306:3306 -p 33060:33060 mysql:latest
-   sudo docker run --name task6-postgres -e POSTGRES_PASSWORD=$DBPASSWORD -d --rm -p 5432:5432 postgres:alpine
+   wget https://raw.githubusercontent.com/rekusha/exadel/master/task3/1.1/docker_install.sh   
+   chmod +x docker_install.sh  
+   sudo ./docker_install.sh  
+     
+   sudo docker run --name task6-mysql -e MYSQL_ROOT_PASSWORD=$DBPASSWORD -d --rm -p 3306:3306 -p 33060:33060 mysql:latest  
+   sudo docker run --name task6-postgres -e POSTGRES_PASSWORD=$DBPASSWORD -d --rm -p 5432:5432 postgres:alpine  
 
    
    
