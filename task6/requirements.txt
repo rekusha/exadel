@@ -1,2 +1,1 @@
-pandas
-csv
+pandas==1.2.5
