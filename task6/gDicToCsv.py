@@ -30,5 +30,5 @@ def csv_write(filename, header, rows):
         writer.writerows(rows)
 
 
-csv_write('students.csv', student_header, student_row)
-csv_write('tasks.csv', task_header, task_row)
+csv_write('Students.csv', student_header, student_row)
+csv_write('Result.csv', task_header, task_row)
