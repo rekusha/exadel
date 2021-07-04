@@ -1,6 +1,6 @@
 select 'CREATE DATABASE task6' where not exists (select from pg_database where datname = 'task6');
 
-use task6;
+\c task6;
 
 create table if not exists Students(
 		id serial primary key,
