@@ -1,4 +1,4 @@
-CREATE DATABASE task6;
+CREATE DATABASE if not exists task6;
 
 \c task6
 
@@ -15,5 +15,5 @@ create table if not exists Result(
                 Task3 varchar (127) not null,
                 Task4 varchar (127) not null);
 
-\copy Students(StudentId,Surname Name) FROM './students.csv' delitimer ',' csv header;
-\copy Result(StudentId,Task1,Task2,Task3,Task4) FROM './result.csv' delitimer ',' csv header;
+\copy Students(StudentId,Surname Name) FROM './Students.csv' delitimer ',' csv header;
+\copy Result(StudentId,Task1,Task2,Task3,Task4) FROM './Result.csv' delitimer ',' csv header;
