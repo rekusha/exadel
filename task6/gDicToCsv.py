@@ -14,8 +14,8 @@ task_row = []
 
 for _ in range(len(x)):
     if str(x['Unnamed: 0'][_])[:1].isdigit():
-        student_row.append({'StudentId': int(x['Unnamed: 0'][_]),
-                            'Surname Name': x['Surname Name'][_]})
+        student_row.append({'Surname Name': x['Surname Name'][_],
+                            'StudentId': int(x['Unnamed: 0'][_])})
         task_row.append({'StudentId': int(x['Unnamed: 0'][_]),
                          'Task1': x['Task1 - Git/Github'][_],
                          'Task2': x['Task2 - AWS/Clouds'][_],
