@@ -22,7 +22,7 @@
 
 ------------------
 
-1. Развернуть в облаке контейнер с базой данных SQL (MySQL or PostgreSQL)
+## 1. Развернуть в облаке контейнер с базой данных SQL (MySQL or PostgreSQL)
    
    установка докера и старт контейнера с бд (без проброса папок для хранения бд ибо пока нет необходимости)
    ```
@@ -50,7 +50,7 @@
    sudo apt install postgresql-client-13
    ```
 
-2. создание бд, наполнение табличных данных из .csv файлов с последующим выводом информации про объект по фамилии:  
+## 2. создание бд, наполнение табличных данных из .csv файлов с последующим выводом информации про объект по фамилии:  
    ```
    
    wget https://raw.githubusercontent.com/rekusha/exadel/master/task6/gDicToCsv.py  
@@ -93,7 +93,9 @@
    psql -h localhost -U postgres -W task6 -c "\copy Students(Student,StudentId) FROM './Students.csv' DELIMITER ',' CSV HEADER;"  
    psql -h localhost -U postgres -W task6 -c "\copy Result(StudentId,Task1,Task2,Task3,Task4) FROM './Result.csv' DELIMITER ',' CSV HEADER;"
    ```
-3. Написать запрос который по вашей фамилии будет находить информацию по выполненным заданиям и выводить результат на экран.
+   # EXTRA 2.1 (собрать временную таблицу общую или пару временных таблиц после чего делать перенос данных из временной таблицы в целевую с проверкой есть ли строка под "курсором" в целевой таблице и если нет выполнить перенос строки, после завершения обработки дропнуть временные таблицу/ы. не забыть исполнить в коде)  
+   
+## 3. Написать запрос который по вашей фамилии будет находить информацию по выполненным заданиям и выводить результат на экран.
    MySql - >  
    ```
    mysql -h 127.0.0.1 -u root --password=$DBPASSWORD -e "use task6; select student, task1, task2, task3, task4 from Students,Result where Students.StudentId=Result.StudentId and Student REGEXP 'Рекун';"
@@ -115,7 +117,7 @@
    Александр Рекун | Done  | Done  | Done  | Done
    (1 row)
    ```
-4. создание дампа бд в файл, удаление бд, восстановление данных из дампа:  
+## 4. создание дампа бд в файл, удаление бд, восстановление данных из дампа:  
    MySql - >  
    ```
    mysqldump -h 127.0.0.1 -u root --password=$DBPASSWORD task6 > task6_mysql_dump.sql    
@@ -149,3 +151,4 @@
     Александр Рекун | Done  | Done  | Done  | Done
    (1 row)
    ```
+## 5. Написать Ansible роль для развертывания SQL или noSQL базы данных. Креды не должны храниться в GitHub.  
