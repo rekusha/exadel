@@ -46,14 +46,19 @@
      
    после отработки пайтон скрипта создадутся файлы students.csv и tasks.csv в них импортированные из gdocs данные и подготовленные для импорта в бд  
    
-   MySql - >  ```
-   mysqlimport --ignorelines=1 --fields-terminated-by=, --columns='StudentsId, Student' -h 127.0.0.1 -u root -p task6 ./students.csv  
-   mysqlimport --ignorelines=1 --fields-terminated-by=, --columns='StudentsId, Student' -h 127.0.0.1 -u root -p task6 ./tasks.csv  
-    ```  
+   MySql - >  
+   ```
+   mysql -h 127.0.0.1 -u root -p -e 'SET GLOBAL local_infile = true;'  
+   mysqlimport --ignore-lines=1 --fields-terminated-by=, --columns='Student, StudentId' -h 127.0.0.1 -u root -p -L task6 ./Students.csv     
+   mysqlimport --ignore-lines=1 --fields-terminated-by=, --columns='StudentId,Task1,Task2,Task3,Task4' -h 127.0.0.1 -u root -p -L task6 ./Result.csv
+   mysql -h 127.0.0.1 -u root -p -e 'SET GLOBAL local_infile = false;'
+   
+    mysql -h 127.0.0.1 -u root -p -e "use task6; select student, task1, task2, task3, task4 from Students,Result where Students.StudentId=Result.StudentId and Student REGEXP 'Рекун';"
+   ```  
      
-   Postgres - >  ```
-   sudo docker exec -it task6-postgres sh -c 'psql -h ocalhost -U postgres -W -f postgres_init.sql && psql -h localhost -U postgres -W -f postgers_fill.sql' ```
-   
-
-   
+   Postgres - >  
+   ```
+   sudo docker exec -it task6-postgres sh -c 'psql -h localhost -U postgres -W -f postgres_init.sql && psql -h localhost -U postgres -W -f postgers_fill.sql' 
+   sudo docker exec -it task6-postgres sh -c "select students.student, task1, task2, task3, task4 from students,result where students.studentid=result.studentid and students.student ~ 'Рекун';"
+   ```
    
