@@ -52,9 +52,8 @@
    wget https://raw.githubusercontent.com/rekusha/exadel/master/task6/gDicToCsv.py  
    wget https://raw.githubusercontent.com/rekusha/exadel/master/task6/requirements.txt  
    
-   sudo apt install python3-pip  
-   pip install -r requirements.txt  
-   python3 gDicToCsv.py  # после отработки пайтон скрипта будут созданы файлы Students.csv и Tasks.csv в них импортированные из gdocs данные и подготовленные для импорта в бд  
+   sudo apt install python3-pip && pip install -r requirements.txt && python3 gDicToCsv.py  
+   # после отработки пайтон скрипта будут созданы файлы Students.csv и Tasks.csv в них импортированные из gdocs данные и подготовленные для импорта в бд  
    ```
    
    MySql - >  
