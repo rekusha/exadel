@@ -25,10 +25,35 @@
 1. Развернуть в облаке контейнер с базой данных SQL (MySQL or PostgreSQL)  
    wget https://raw.githubusercontent.com/rekusha/exadel/master/task3/1.1/docker_install.sh   
    chmod +x docker_install.sh  
-   sudo ./docker_install.sh  
+   sudo ./docker_install.sh 
+   wget https://raw.githubusercontent.com/rekusha/exadel/master/task6/mysql_init.sql
+   wget https://raw.githubusercontent.com/rekusha/exadel/master/task6/postgres_init.sql
      
-   sudo docker run --name task6-mysql -e MYSQL_ROOT_PASSWORD=$DBPASSWORD -d --rm -p 3306:3306 -p 33060:33060 mysql:latest  
-   sudo docker run --name task6-postgres -e POSTGRES_PASSWORD=$DBPASSWORD -d --rm -p 5432:5432 postgres:alpine  
+   MySql - > ``` 
+   sudo docker run --name task6-mysql -e MYSQL_ROOT_PASSWORD=$DBPASSWORD -d --rm -p 3306:3306 -p 33060:33060 mysql:latest  ```
+   Postgres - >  ```
+   sudo docker run --name task6-postgres -e POSTGRES_PASSWORD=$DBPASSWORD -d --rm -p 5432:5432 postgres:alpine  ```
+   
+   ```wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - echo "deb http://apt.postgresql.org/pub/repos/apt/ 'lsb_release -cs'-pgdg main" | sudo tee  /etc/apt/sources.list.d/pgdg.list && sudo apt install postgresql-client-13```
+   
+   wget https://raw.githubusercontent.com/rekusha/exadel/master/task6/gDicToCsv.py  
+   wget https://raw.githubusercontent.com/rekusha/exadel/master/task6/requirements.txt  
+   
+   sudo apt install python3-pip  
+   pip install -r requirements.txt  
+   chmod +x gDicToCsv.py  
+   ./gDicToCsv.py  
+     
+   после отработки пайтон скрипта создадутся файлы students.csv и tasks.csv в них импортированные из gdocs данные и подготовленные для импорта в бд  
+   
+   MySql - >  ```
+   mysqlimport --ignorelines=1 --fields-terminated-by=, --columns='StudentsId, Student' -h 127.0.0.1 -u root -p task6 ./students.csv  
+   mysqlimport --ignorelines=1 --fields-terminated-by=, --columns='StudentsId, Student' -h 127.0.0.1 -u root -p task6 ./tasks.csv  
+    ```  
+     
+   Postgres - >  ```
+   sudo docker exec -it task6-postgres sh -c 'psql -h ocalhost -U postgres -W -f postgres_init.sql && psql -h localhost -U postgres -W -f postgers_fill.sql' ```
+   
 
    
    
