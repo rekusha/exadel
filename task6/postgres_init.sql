@@ -1,4 +1,5 @@
-CREATE DATABASE if not exists task6;
+SELECT 'CREATE DATABASE task6'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'task6')\gexec;
 
 \c task6
 
