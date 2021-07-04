@@ -15,5 +15,5 @@ create table if not exists Result(
                 Task3 varchar (127) not null,
                 Task4 varchar (127) not null);
 
-\copy Students(StudentId,Surname Name) FROM './Students.csv' delitimer ',' csv header;
+\copy Students(Student,StudendId) FROM './Students.csv' delitimer ',' csv header;
 \copy Result(StudentId,Task1,Task2,Task3,Task4) FROM './Result.csv' delitimer ',' csv header;
