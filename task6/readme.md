@@ -43,7 +43,11 @@
    ```
    sudo docker run --name task6-postgres -e POSTGRES_PASSWORD=$DBPASSWORD -d --rm -p 5432:5432 postgres:alpine  
    
-   wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - echo "deb http://apt.postgresql.org/pub/repos/apt/ 'lsb_release -cs'-pgdg main" | sudo tee  /etc/apt/sources.list.d/pgdg.list && sudo apt install postgresql-client-13
+   sudo apt -y install vim bash-completion wget
+   wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - 
+   echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" |sudo tee  /etc/apt/sources.list.d/pgdg.list
+   sudo apt update
+   sudo apt install postgresql-client-13
    ```
 
 2. создание бд, наполнение табличных данных из .csv файлов с последующим выводом информации про объект по фамилии:  
@@ -78,23 +82,16 @@
    mysqlimport --ignore-lines=1 --fields-terminated-by=, --columns='StudentId,Task1,Task2,Task3,Task4' -h 127.0.0.1 -u root --password=$DBPASSWORD -L task6 ./Result.csv
    
    mysql -h 127.0.0.1 -u root --password=$DBPASSWORD -e 'SET GLOBAL local_infile = false;'
-   
-   mysql -h 127.0.0.1 -u root --password=$DBPASSWORD -e "use task6; select student, task1, task2, task3, task4 from Students,Result where Students.StudentId=Result.StudentId and Student REGEXP 'Рекун';"
-    
-    +-------------------------------+-------+-------+-------+-------+
-    | student                       | task1 | task2 | task3 | task4 |
-    +-------------------------------+-------+-------+-------+-------+
-    |Александр Рекун               | Done  | Done  | Done  | Done
-    +-------------------------------+-------+-------+-------+-------+
-
    ```  
      
    Postgres - >  
    ```
    wget https://raw.githubusercontent.com/rekusha/exadel/master/task6/postgres_init.sql  
-   sudo docker exec -it task6-postgres sh -c 'psql -h localhost -U postgres -W -f postgres_init.sql && psql -h localhost -U postgres -W -f postgers_fill.sql'
-   
-   sudo docker exec -it task6-postgres sh -c "select students.student, task1, task2, task3, task4 from students,result where students.studentid=result.studentid and students.student ~ 'Рекун';"
+   psql -h localhost -U postgres -W -c 'CREATE DATABASE task6'
+
+   psql -h localhost -U postgres -W -f postgres_init.sql  
+   psql -h localhost -U postgres -W task6 -c "\copy Students(Student,StudentId) FROM './Students.csv' DELIMITER ',' CSV HEADER;"  
+   psql -h localhost -U postgres -W task6 -c "\copy Result(StudentId,Task1,Task2,Task3,Task4) FROM './Result.csv' DELIMITER ',' CSV HEADER;"
    ```
 3. Написать запрос который по вашей фамилии будет находить информацию по выполненным заданиям и выводить результат на экран.
    MySql - >  
@@ -111,7 +108,12 @@
      
    Postgres - >  
    ```
-   sudo docker exec -it task6-postgres sh -c "select students.student, task1, task2, task3, task4 from students,result where students.studentid=result.studentid and students.student ~ 'Рекун';"
+   psql -h localhost -U postgres -W task6 -c "select students.student, task1, task2, task3, task4 from students,result where students.studentid=result.studentid and students.student ~ 'Рекун'";
+   
+        student     | task1 | task2 | task3 | task4
+   -----------------+-------+-------+-------+-------
+   Александр Рекун | Done  | Done  | Done  | Done
+   (1 row)
    ```
 4. создание дампа бд в файл, удаление бд, восстановление данных из дампа:  
    MySql - >  
@@ -133,7 +135,17 @@
    ```
    Postgres - >  
    ```
-   pg_dump -h 127.0.0.1 -U postgres -W task6 > task6_postgres_dump.sql  
-   sudo docker restart task6-postgres  
+   pg_dump -h 127.0.0.1 -U postgres -W task6 > task6_postgres_dump.sql 
+   
+   psql -h localhost -U postgres -W -c "DROP DATABASE task6;"
+   psql -h localhost -U postgres -W -c 'CREATE DATABASE task6'
+   
    psql -h 127.0.0.1 -U postgres -W task6 < task6_postgres_dump.sql  
+   
+   $ psql -h localhost -U postgres -W task6 -c "select students.student, task1, task2, task3, task4 from students,result where students.studentid=result.studentid and students.student ~ 'Рекун'";
+   
+        student     | task1 | task2 | task3 | task4
+   -----------------+-------+-------+-------+-------
+    Александр Рекун | Done  | Done  | Done  | Done
+   (1 row)
    ```
