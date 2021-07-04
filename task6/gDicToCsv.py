@@ -7,7 +7,7 @@ url_1 = sheet_url.replace('/edit#gid=', '/export?format=csv&gid=')
 
 x = pandas.read_csv(url_1)
 
-student_header = ['Surname Name', 'StudentId']
+student_header = ['Student', 'StudentId']
 student_row = []
 task_header = ['StudentId', 'Task1', 'Task2', 'Task3', 'Task4']
 task_row = []
