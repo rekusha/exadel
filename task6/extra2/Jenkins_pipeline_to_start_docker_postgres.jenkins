@@ -3,7 +3,7 @@ pipeline {
         label 'host-main' 
     }
     environment {
-        WORK_DIR = './postgres-cluster'
+        WORK_DIR = 'task6/extra2/postgres-cluster'
     }
     stages {
       stage(‘Build’) {

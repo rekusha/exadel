@@ -4,7 +4,7 @@ pipeline {
     }
 
     environment {
-        WORK_DIR = './mysql-cluster'
+        WORK_DIR = 'task6/extra2/mysql-cluster'
     }
     stages {
       stage(‘Build’) {
