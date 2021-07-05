@@ -10,6 +10,35 @@ services:
       - /data/postgresql_01:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: {{ password }}
+    tasks: 
+    displayName: configure master
+      - name: Copy config files to master server
+        copy:
+          src: "/files/master"
+          dest: /etc/postgresql/13/main/
+        with_fileglob: "/files/master/*"  
+
+      - name: Restart postgresql
+        ansible.builtin.service:
+          name: postgresql
+          state: restarted
+
+      - name: set postgres user password
+        become: yes
+        become_method: sudo
+        become_user: postgres
+        community.postgresql.postgresql_user:
+          name: postgres
+          password: "{{ password }}" 
+
+      - name: create user for replication
+        community.postgresql.postgresql_user:
+          name: repluser
+          password: "{{ password }}" 
+          role_attr_flags: REPLICATION
+          login_user: postgres
+          login_password: "{{ password }}"
+          login_host: localhost
 
   postgresql_02:
     image: postgres
@@ -19,3 +48,34 @@ services:
       - /data/postgresql_02/:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: {{ password }}
+    tasks:
+      - name: Copy config files to slave server
+        copy:
+          src: "/files/slave_cfg"
+          dest: /etc/postgresql/13/main/
+        with_fileglob: "/files/slave_cfg/*"
+        
+      - name: Restart postgresql
+        ansible.builtin.service:
+          name: postgresql
+          state: restarted
+
+      - name: set postgres user password
+        become: yes
+        become_method: sudo
+        become_user: postgres
+        community.postgresql.postgresql_user:
+          name: postgres
+          password: "{{ password }}" 
+
+
+      - name: create subscription to master server
+        community.postgresql.postgresql_subscription:
+          connparams:
+            host: postgresql_01
+            port: 5432
+            user: repluser
+            password: "{{ password }}"
+          login_user: postgres
+          login_password: "{{ password }}"
+          login_host: localhost
