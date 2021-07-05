@@ -159,3 +159,118 @@
 ## 5. Написать Ansible роль для развертывания SQL или noSQL базы данных. Креды не должны храниться в GitHub.  
 /ansible_pb/postgres.yml
 /ansible_pb/mysql.yml
+
+------------------------------
+ ## EXTRA 2.
+ Написать Ansible роль для создания SQL/NoSQL кластера.
+ для начала сделаем без ансибла чтоб потом "перепаковать"
+ 
+ создадим рабочий каталоги переходим в него
+ ```
+ mkdir -p /opt/docker/postgresql && cd /opt/docker/postgresql
+ ```
+ убелимся в существовании перебенной с паролем и если ее нет то создадим
+ ```
+ echo $DBPASSWORD
+ DBPASSWORD=password  # если переменной нет то создадим
+ ```
+ опишем наши контейнеры
+ nano docker-compose.yml
+ ```
+---
+services:
+
+  postgresql_01:
+    image: postgres
+    container_name: postgresql_01
+    restart: always
+    volumes:
+      - /data/postgresql_01:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: $DBPASSWORD
+
+  postgresql_02:
+    image: postgres
+    container_name: postgresql_02
+    restart: always
+    volumes:
+      - /data/postgresql_02/:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: $DBPASSWORD
+ ```
+ postgresql_01/postgresql_02 — названия сервисов контейнеры которых будем поднимать
+ image - используемый образ
+ container_name - имя контейнера присваиваемое ему при запуске
+ restart - в каких случаях контейнер будет стартовать
+ volumes - проброс каталога хоста внутрь контейнера
+ environment - для инициализации бд надо чтоб был присвоем пароль поэтому задаем POSTGRES_PASSWORD
+ 
+ запускаем
+ ```
+ sudo docker-compose up -d
+ 
+ Creating postgresql_02 ... done
+ Creating postgresql_01 ... done
+ ```
+ 
+ по выполнению $sudo docker ps должны увидеть наши два контейнера в списке 
+ postgresql_01 - мастер
+ postgresql_02 - не мастер )
+ 
+ ### настройка для мастера
+ ```
+ docker exec -it postgresql_01 bash
+ su - postgres
+ createuser --replication -P repluser
+ # вводим пароль для нового пользователя
+ exit
+ exit
+ ```
+ nano /data/postgresql_01/postgresql.conf
+ ```
+ wal_level = replica
+ max_wal_senders = 2
+ max_replication_slots = 2
+ hot_standby = on
+ hot_standby_feedback = on
+ ```
+ wal_level указывает, сколько информации записывается в WAL (журнал операций, который используется для репликации). Значение replica указывает на необходимость записывать только данные для поддержки архивирования WAL и репликации.
+ max_wal_senders — количество планируемых слейвов; 
+ max_replication_slots — максимальное число слотов репликации (данный параметр не нужен для postgresql 9.2 — с ним сервер не запустится); 
+ hot_standby — определяет, можно или нет подключаться к postgresql для выполнения запросов в процессе восстановления; 
+ hot_standby_feedback — определяет, будет или нет сервер slave сообщать мастеру о запросах, которые он выполняет.
+ 
+ Посмотрим подсеть, которая используется для контейнеров с postgresql:
+ ```
+ sudo docker network inspect postgresql_default | grep Subnet
+ "Subnet": "172.19.0.0/16",
+ ```
+ 
+ nano /data/postgresql_01/pg_hba.conf 
+ добавляем строку после остальных «host replication»
+ ```
+ host    replication     all             172.19.0.0/16           md5
+ ```
+ этим разрешили подключение пользователю replication из подсети 172.19.0.0/16 с проверкой подлинности по паролю
+ 
+ для применений всех изменений на мастере перезапускаем контейнер
+ ```
+ sudo docker restart postgresql_01
+ ```
+ 
+ ### настройка для НЕ мастера
+ удалить все старое содержимое базы не мастера
+ зайти в баш не мастера
+ выполнить подключение к мастеру с указанием пользователя и метода для репликации
+ ```
+ rm -r /data/postgresql_02/*
+ sudo docker exec -it postgresql_02 bash
+ su - postgres -c "pg_basebackup --host=postgresql_01 --username=repluser --pgdata=/var/lib/postgresql/data --wal-method=stream --write-recovery-conf"
+ после успешного ввода пароля для repluser от мастер хоста начнется процесс репликации
+ ```
+ 
+ для проверки успешности работы настроенной процедуры выполнить для мастера и не мастера
+ ```
+ sudo docker exec -it postgresql_01 su - postgres -c "psql -c 'select * from pg_stat_replication;'"
+ sudo docker exec -it postgresql_02 su - postgres -c "psql -c 'select * from pg_stat_wal_receiver;'"
+ ```
