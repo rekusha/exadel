@@ -1,0 +1,12 @@
+- name: create mysql db container
+  community.docker.docker_container:
+    name: task6-mysql
+    image: mysql:latest
+    container_default_behavior: no_defaults
+    auto_remove: yes
+    detach: yes
+    ports:
+      - "3306:3306"
+      - "33060:33060"
+    env:
+      POSTGRES_PASSWORD: "{{ db_password }}"

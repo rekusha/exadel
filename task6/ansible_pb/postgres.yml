@@ -1,0 +1,8 @@
+- name: postgres db
+  hosts: DB_POSTGRES
+
+  roles:
+    - docker_install
+    - {role: psql_install, become: yes}
+    - postgres_container_run
+    - create_fill_postgres_db

@@ -1,0 +1,45 @@
+---
+- name: create db
+  community.postgresql.postgresql_db:
+    name: task6
+    login_user: postgres
+    login_password: "{{ db_password }}"
+    login_host: localhost
+
+- name: dump copy
+  copy:
+    src: "task6_postgres_dump.sql"
+    dest: "/tmp"
+
+- name: restore dump
+  community.postgresql.postgresql_db:
+    name: task6
+    state: restore
+    target: /tmp/task6_postgres_dump.sql
+    login_user: postgres
+    login_password: "{{ db_password }}"
+    login_host: localhost
+
+- name: check .Students
+  community.postgresql.postgresql_query:
+    db: task6
+    login_user: postgres
+    login_password: "{{ db_password }}"
+    login_host: localhost
+    query: SELECT * FROM Students
+  register: stud
+
+- name: check .Result
+  community.postgresql.postgresql_query:
+    db: task6
+    login_user: postgres
+    login_password: "{{ db_password }}"
+    login_host: localhost
+    query: SELECT * FROM Result
+  register: res
+
+- ansible.builtin.debug:
+    var: stud
+
+- ansible.builtin.debug:
+    var: res

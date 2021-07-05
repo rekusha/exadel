@@ -1,0 +1,8 @@
+---
+- name: install
+  apt:
+    name:
+      - mysql-client-core-8.0
+
+    state: present
+    update_cache: yes

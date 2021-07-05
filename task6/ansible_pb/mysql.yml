@@ -1,0 +1,8 @@
+- name: postgres db
+  hosts: DB_POSTGRES
+
+  roles:
+    - docker_install
+    - {role: mysql_cli_install, become: yes}
+    - mysql_container_run
+    - create_fill_mysql_db
