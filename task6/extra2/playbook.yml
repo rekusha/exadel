@@ -31,8 +31,11 @@
     
     - name: Execute the command in shell
       ansible.builtin.shell: mkdir -p /opt/docker/postgresql && cd /opt/docker/postgresql && DBPASSWORD={{password}}
-    
-    - name: copy compose file
-      copy:
-        src: "docker-compose.yml"
-        dest: "/opt/docker/postgresql"
+        
+    - name: Create and start services
+      community.docker.docker_compose:
+        project_src: "./docker-compose.yml"
+        
+    - name:
+      community.docker.docker: 'su - postgres '
+        
