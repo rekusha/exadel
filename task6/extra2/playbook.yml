@@ -26,16 +26,3 @@
     - name: docker module for python install
       pip:
         name: docker
-        
-    # <----------------------------------->
-    
-    - name: Execute the command in shell
-      ansible.builtin.shell: mkdir -p /opt/docker/postgresql && cd /opt/docker/postgresql && DBPASSWORD={{password}}
-        
-    - name: Create and start services
-      community.docker.docker_compose:
-        project_src: "./docker-compose.yml"
-        
-    - name:
-      community.docker.docker: 'su - postgres '
-        
