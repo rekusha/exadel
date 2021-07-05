@@ -156,3 +156,5 @@
    (1 row)
    ```
 ## 5. Написать Ansible роль для развертывания SQL или noSQL базы данных. Креды не должны храниться в GitHub.  
+/ansible_pb/postgres.yml
+/ansible_pb/mysql.yml
