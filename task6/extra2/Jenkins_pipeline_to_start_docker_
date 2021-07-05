@@ -1,0 +1,12 @@
+pipeline {
+    agent {
+        label 'host-main' 
+    }
+    stages {
+      stage(‘Build’) {
+        steps {
+          sh '/home/rekusha/exadel/task6/extra2/docker-compose up --build'
+        }
+      }
+    }
+}
