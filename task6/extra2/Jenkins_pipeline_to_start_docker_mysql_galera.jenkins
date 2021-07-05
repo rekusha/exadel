@@ -2,10 +2,16 @@ pipeline {
     agent {
         label 'ubuntu' 
     }
+
+    environment {
+        WORK_DIR = './mysql-cluster'
+    }
     stages {
       stage(‘Build’) {
         steps {
-          sh 'ansible-playbook /home/rekusha/exadel/task6/extra2/mysql-cluster/playbook.yml'
+	  dir(WORK_DIR) {
+          sh 'ansible-playbook playbook.yml' 
+          }
         }
       }
     }

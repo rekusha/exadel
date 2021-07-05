@@ -2,11 +2,16 @@ pipeline {
     agent {
         label 'host-main' 
     }
+    environment {
+        WORK_DIR = './postgres-cluster'
+    }
     stages {
       stage(‘Build’) {
         steps {
-          sh 'ansible-playbook localhost /home/rekusha/exadel/task6/extra2/playbook.yml'
-          sh '/home/rekusha/exadel/task6/extra2/docker-compose up --build'
+          dir(WORK_DIR) {
+            sh 'ansible-playbook localhost playbook.yml'
+            sh 'docker-compose up --build'
+          }
         }
       }
     }

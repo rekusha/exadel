@@ -1,4 +1,3 @@
-
 ---
 - name  : MYSQL_Cluster install
   hosts : all
