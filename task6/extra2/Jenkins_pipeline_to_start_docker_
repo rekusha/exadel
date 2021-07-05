@@ -5,6 +5,7 @@ pipeline {
     stages {
       stage(‘Build’) {
         steps {
+          sh 'ansible-playbook localhost /home/rekusha/exadel/task6/extra2/playbook.yml'
           sh '/home/rekusha/exadel/task6/extra2/docker-compose up --build'
         }
       }
