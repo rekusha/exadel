@@ -28,30 +28,40 @@
 -------
 
 ## Task 1  
-### install ubuntu server  
-#apt install openssh  
-#usermod -aG sudo rekusha  
-#ufw allow OpenSSH
-#ufw enable
+<details><summary> 1.1 Установить на сервер - сконфигурировать веб и базу   </summary>
 
+<details><summary> some config ubuntu server  </summary>
+<pre>
+# apt install openssh
+# usermod -aG sudo rekusha
+# ufw allow OpenSSH
+# ufw enable
+</pre></details>
 
-### Installing the Nginx Web Server  
-sudo apt update  
-sudo apt install nginx   
-sudo ufw allow 'Nginx HTTP'  
+<details><summary> Installing the Nginx Web Server   </summary>
+<pre>
+$ sudo apt update
+$ sudo apt install nginx
+$ sudo ufw allow 'Nginx HTTP'
+</pre></details>
 
-### Installing MySQL  
-sudo apt install mysql-server  
-sudo mysql_secure_installation (при необходимости)  
+<details><summary>Installing MySQL  </summary>
+<pre>
+$ sudo apt install mysql-server
+$ sudo mysql_secure_installation (при необходимости)
+</pre></details>
 
-### Installing PHP  
-sudo apt install php-fpm php-mysql  
+<details><summary>Installing PHP  </summary>
+<pre>
+$ sudo apt install php-fpm php-mysql
+</pre></details>
 
-### Configuring Nginx to Use the PHP Processor  
-sudo mkdir /var/www/<your_domain>  
-sudo chown -R $USER:$USER /var/www/<your_domain>  
-sudo nano /etc/nginx/sites-available/<your_domain>  
-```
+<details><summary>Configuring Nginx to Use the PHP Processor  </summary>
+<pre>
+$ sudo mkdir /var/www/<your_domain>
+$ sudo chown -R $USER:$USER /var/www/<your_domain>
+$ sudo nano /etc/nginx/sites-available/<your_domain>
+</pre> <pre>
 server {
     listen 80;
     server_name <your_domain> www.<your_domain>;
@@ -68,29 +78,33 @@ server {
         deny all;
     }
 }
-```
-sudo ln -s /etc/nginx/sites-available/<your_domain>/etc/nginx/sites-enabled/  
-sudo unlink /etc/nginx/sites-enabled/default  
-sudo nginx -t  
-sudo systemctl reload nginx  
+</pre> <pre>
+$ sudo ln -s /etc/nginx/sites-available/<your_domain>/etc/nginx/sites-enabled/  
+$ sudo unlink /etc/nginx/sites-enabled/default  
+$ sudo nginx -t  
+$ sudo systemctl reload nginx  
+</pre></details>
 
-### Установка сервера Zabbix  
-sudo wget https://repo.zabbix.com/zabbix/5.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_5.4-1+ubuntu20.04_all.deb  
-sudo dpkg -i zabbix-release_5.4-1+ubuntu20.04_all.deb  
-sudo apt update  
-sudo  apt install zabbix-server-mysql zabbix-frontend-php zabbix-nginx-conf zabbix-sql-scripts zabbix-agent  
+<details><summary>Установка сервера Zabbix  </summary>
+<pre>
+$ sudo wget https://repo.zabbix.com/zabbix/5.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_5.4-1+ubuntu20.04_all.deb  
+$ sudo dpkg -i zabbix-release_5.4-1+ubuntu20.04_all.deb  
+$ sudo apt update  
+$ sudo  apt install zabbix-server-mysql zabbix-frontend-php zabbix-nginx-conf zabbix-sql-scripts zabbix-agent  
+</pre></details>
 
-### Настройка базы данных MySQL для Zabbix  
-sudo mysql  
+<details><summary>Настройка базы данных MySQL для Zabbix  </summary>
+<pre>
+$ sudo mysql  
 mysql> create database zabbix character set utf8 collate utf8_bin;  
-mysql> create user zabbix@localhost identified by '<your_zabbix_mysql_password>';  
+mysql> create user zabbix@localhost identified by 'your_zabbix_mysql_password';  
 mysql> grant all privileges on zabbix.* to zabbix@localhost;  
-mysql> quit;
+mysql> quit;  
 
 zcat /usr/share/doc/zabbix-server-mysql*/create.sql.gz | mysql -uzabbix -p zabbix  
 sudo nano /etc/zabbix/zabbix_server.conf
-```
-...
+</pre>
+<pre>
 ### Option: DBPassword
 #       Database password. Ignored for SQLite.
 #       Comment this line if no password is used.
@@ -98,25 +112,76 @@ sudo nano /etc/zabbix/zabbix_server.conf
 # Mandatory: no
 # Default:
 DBPassword=<zabbix_user_password_for_mysql>
-...
-```
-### Настройка Nginx для Zabbix  
+</pre></details>
 
+<details><summary>Настройка Nginx для Zabbix  </summary>
+<pre>
 sudo nano /etc/zabbix/nginx.conf  
-```
+</pre><pre>  
 server {
         listen          80;
         server_name     <your_domain>;
-```
+</pre></details>
 
-### Настройка PHP для Zabbix  
-sudo nano /etc/zabbix/php-fpm.conf  
-```
-php_value[date.timezone] = Europe/Kiev
-```
+<details>
+<summary>Настройка PHP для Zabbix  </summary>
+<pre>
+sudo nano /etc/zabbix/php-fpm.conf   
+</pre><pre>
+php_value[date.timezone] = Europe/Kiev  
+</pre></details>
+
+перезапускаем все что есть + добавляем сервисы в автозапуск  
+
+<pre>
 systemctl restart zabbix-server zabbix-agent nginx php7.4-fpm
 systemctl enable zabbix-server zabbix-agent nginx php7.4-fpm
-
-### Конфигурация настроек для веб-интерфейса Zabbix  
+</pre>
+ 
+### на последок конфигурация настроек для веб-интерфейса Zabbix  
 идем на http://zabbix_server_name отвечаем на требуемое  
 пользователь по умолчанию Admin пароль zabbix  
+</details>
+
+<details><summary>1.2 Поставить на подготовленные ранее сервера или виртуалки заббикс агенты  </summary>
+
+<details><summary>Установка агента Zabbix  </summary>
+<pre>
+$ sudo wget https://repo.zabbix.com/zabbix/5.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_5.4-1+ubuntu20.04_all.deb  
+$ sudo dpkg -i zabbix-release_5.4-1+ubuntu20.04_all.deb  
+$ sudo apt update  
+$ sudo apt install zabbix-agent  
+</pre></details>
+
+<details><summary>Настройка агента Zabbix  </summary>
+<details><summary>сгенерировать PSK и отобразить его</summary>
+<pre>
+$ sudo sh -c "openssl rand -hex 32 > /etc/zabbix/zabbix_agentd.psk"
+$ cat /etc/zabbix/zabbix_agentd.psk
+75ad6cb5e17d244ac8c00c96a1b074d0550b8e7b15d0ab3cde60cd79af280fca
+</pre>
+сохранить его для дальнейшего использования. потребуется для конфигурации хоста  
+</details>  
+<details><summary> отредактировать настройки агента Zabbix для установки безопасного подключения к серверу Zabbix  </summary>
+<pre>
+sudo nano /etc/zabbix/zabbix_agentd.conf
+</pre><pre>
+Server=zabbix_server_ip_address
+ServerActive=zabbix_server_ip_address
+Hostname=Second Ubuntu Server  # под каким именем агент будет виден серверу
+TLSConnect=psk
+TLSAccept=psk
+TLSPSKIdentity=PSK 001
+TLSPSKFile=/etc/zabbix/zabbix_agentd.psk
+</pre><pre>
+$ sudo systemctl restart zabbix-agent
+$ sudo systemctl enable zabbix-agent
+$ sudo ufw allow 10050/tcp
+</pre>
+
+<details><summary>добавление хоста на сервер Zabbix</summary>
+http://zabbix_server_name -> login -> password  
+Configuration -> Hosts -> Create host -> откроется страница настройки хоста  
+указать host name и ip агента и добавить в группу/ы (подходящую)  
+
+</details></details>
