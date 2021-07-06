@@ -177,7 +177,7 @@ TLSPSKFile=/etc/zabbix/zabbix_agentd.psk
 $ sudo systemctl restart zabbix-agent
 $ sudo systemctl enable zabbix-agent
 $ sudo ufw allow 10050/tcp
-</pre>
+</pre></details>
 
 <details><summary>добавление хоста на сервер Zabbix</summary>
 http://zabbix_server_name -> login -> password  
