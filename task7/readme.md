@@ -29,24 +29,24 @@
 
 <details><summary> Task 1 - Zabbix  </summary>
 	
-<details><summary> 1.1 Установить на сервер - сконфигурировать веб и базу docker-compouse  </summary>
-<pre>
-curl -fsSL https://get.docker.com -o get-docker.sh
-sh get-docker.sh
-sudo usermod -aG docker $USER
-sudo curl -L "https://github.com/docker/compose/releases/download/1.29.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-git clone https://github.com/rekusha/exadel.git
-
-docker-compose -f exadel/task7/zabbix-letsencrypt-docker-compose.yml -p zabbix up -d
-</pre>	
-</details>
+<details><summary> 1.1 Установить на сервер - сконфигурировать веб и базу DOCKER  </summary>
+	
+> <pre>
+> curl -fsSL https://get.docker.com -o get-docker.sh
+> sh get-docker.sh
+> sudo usermod -aG docker $USER
+> sudo curl -L "https://github.com/docker/compose/releases/download/1.29.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+> sudo chmod +x /usr/local/bin/docker-compose
+> git clone https://github.com/rekusha/exadel.git
+> 
+> docker-compose -f exadel/task7/zabbix-letsencrypt-docker-compose.yml -p zabbix up -d
+> </pre>	
+> </details>
 	
 	
 <details><summary> 1.1 Установить на сервер - сконфигурировать веб и базу   </summary>
-
-> <details><summary> some config ubuntu server  </summary>
 	
+> <details><summary> some config ubuntu server  </summary>
 > <pre>
 > # apt install openssh
 > # usermod -aG sudo rekusha
@@ -138,7 +138,7 @@ docker-compose -f exadel/task7/zabbix-letsencrypt-docker-compose.yml -p zabbix u
 >         listen          80;
 >         server_name     your_domain;
 > </pre></details>
-
+ 
 > <details>
 > <summary>Настройка PHP для Zabbix  </summary>
 > <pre>
@@ -146,18 +146,17 @@ docker-compose -f exadel/task7/zabbix-letsencrypt-docker-compose.yml -p zabbix u
 > </pre><pre>
 > php_value[date.timezone] = Europe/Kiev  
 > </pre></details>
-
-перезапускаем все что есть + добавляем сервисы в автозапуск  
-
-<pre>
-systemctl restart zabbix-server zabbix-agent nginx php7.4-fpm
-systemctl enable zabbix-server zabbix-agent nginx php7.4-fpm
-</pre>
- 
-### на последок конфигурация настроек для веб-интерфейса Zabbix  
-идем на http://zabbix_server_name отвечаем на требуемое  
-пользователь по умолчанию Admin пароль zabbix  
-</details>
+> 
+> перезапускаем все что есть + добавляем сервисы в автозапуск  
+> 
+> <pre>
+> systemctl restart zabbix-server zabbix-agent nginx php7.4-fpm
+> systemctl enable zabbix-server zabbix-agent nginx php7.4-fpm
+> </pre>
+> 
+> на последок конфигурация настроек для веб-интерфейса Zabbix  
+> идем на http://zabbix_server_name отвечаем на требуемое  
+> пользователь по умолчанию Admin пароль zabbix  </details>
 
 <details><summary>1.2 Поставить на подготовленные ранее сервера или виртуалки заббикс агенты  </summary>
 
