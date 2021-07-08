@@ -243,8 +243,9 @@
 > указываем владельца панели и имя панели
 > добавляем не менее 1 виджета
 > указываем тип виджета (типов много выбираем кокие нам более всего подходят)
-> 
 > </details>
+>
+> ![alt text](https://github.com/rekusha/exadel/blob/master/task7/images/task7_1.3_dash.png)
 </details>
 
 <details><summary> 1.4 Active check vs passive check - применить у себя оба вида - продемонстрировать  </summary>
@@ -253,6 +254,9 @@
 > Active check - объект крутится на клиенте и в заданный интервал trapper открывает соединение с сервером на порт 10051tcp и передает ранее сформированные данные на сервер <br>
 > <br>
 > Пассивные проверки позволяют отправлять комманды на клиента<br>
+>
+> ![alt text](https://github.com/rekusha/exadel/blob/master/task7/images/task7_1.4.png)
+
 </details>
 
 <details><summary> 1.5 Сделать безагентный чек любого ресурса (ICMP ping)  </summary>  
@@ -289,36 +293,155 @@
 
 <details><summary> 1.6 Спровоцировать алерт - и создать Maintenance инструкцию  </summary>
 
-> скоро <br>
+> ![alt text](https://github.com/rekusha/exadel/blob/master/task7/images/task7_1.6.png)
 </details>
 
 <details><summary> 1.7 Нарисовать дашборд с ключевыми узлами инфраструктуры и мониторингом как и хостов так и установленного на них софта  </summary>
 
-> скоро <br>
+> ![alt text](https://github.com/rekusha/exadel/blob/master/task7/images/task7_1.7.png)
 </details>
 </details>
 
 <details><summary> Task 2 - ELK  </summary>
 
-1.  Installing the ELK Stack  
-<pre>
-sudo sysctl -w vm.max_map_count=262144
-git clone https://github.com/deviantony/docker-elk.git
-cd docker-elk
-docker-compose up -d
-curl localhost:9200
-</pre>
-user: elastic
-password: changeme
-2.  Shipping Docker Logs into ELK  
-Using Logspout  
-<pre>
-sudo docker run -d --name="logspout" --volume=/var/run/docker.sock:/var/run/docker.sock gliderlabs/logspout syslog+tls://192.168.0.230:5000
-</pre>
-3.  Parsing the Data  
+<details><summary> 1.  Установить и настроить ELK (short way + grafana)  </summary>
 
+git clone https://github.com/rekusha/exadel.git <br>
+cd exadel/task7/elkGrafana/ <br>
+docker-compose up -d <br>
 
-<details><summary> куда бы деть море лишнего времени?! </summary>
+<pre>
+Creating network "elkgrafana_elk" with driver "bridge"
+Creating volume "elkgrafana_elasticsearch" with default driver
+Building elasticsearch
+Sending build context to Docker daemon  3.584kB
+Step 1/2 : ARG ELK_VERSION
+Step 2/2 : FROM docker.elastic.co/elasticsearch/elasticsearch:${ELK_VERSION}
+7.13.2: Pulling from elasticsearch/elasticsearch
+ddf49b9115d7: Pull complete
+815a15889ec1: Pull complete
+ba5d33fc5cc5: Pull complete
+976d4f887b1a: Pull complete
+9b5ee4563932: Pull complete
+ef11e8f17d0c: Pull complete
+3c5ad4db1e24: Pull complete
+Digest: sha256:1cecc2c7419a4f917a88c83180335bd491d623f28ac43ca7e0e69b4eca25fbd5
+Status: Downloaded newer image for docker.elastic.co/elasticsearch/elasticsearch:7.13.2
+ ---> 11a830014f7c
+Successfully built 11a830014f7c
+Successfully tagged elkgrafana_elasticsearch:latest
+WARNING: Image for service elasticsearch was built because it did not already exist. To rebuild this image you must use `docker-compose build` or `docker-compose up --build`.
+Building logstash
+Sending build context to Docker daemon   5.12kB
+Step 1/2 : ARG ELK_VERSION
+Step 2/2 : FROM docker.elastic.co/logstash/logstash:${ELK_VERSION}
+7.13.2: Pulling from logstash/logstash
+a4f595742a5b: Pull complete
+fd1132ca70dc: Pull complete
+59f2c8c5f435: Pull complete
+8dcb71d88a4e: Pull complete
+b0d5a23a9e4a: Pull complete
+796f58e1821d: Pull complete
+29c837bdbca8: Pull complete
+9662c1cef6d1: Pull complete
+83ce4b738228: Pull complete
+4b86338e93df: Pull complete
+3b74732a4830: Pull complete
+Digest: sha256:ed75189449f64d3c188a0337054a1fb9dd7bfaf42f1c20442520f364fec014a7
+Status: Downloaded newer image for docker.elastic.co/logstash/logstash:7.13.2
+ ---> 8dc1af4dd662
+Successfully built 8dc1af4dd662
+Successfully tagged elkgrafana_logstash:latest
+WARNING: Image for service logstash was built because it did not already exist. To rebuild this image you must use `docker-compose build` or `docker-compose up --build`.
+Building kibana
+Sending build context to Docker daemon  3.584kB
+Step 1/2 : ARG ELK_VERSION
+Step 2/2 : FROM docker.elastic.co/kibana/kibana:${ELK_VERSION}
+7.13.2: Pulling from kibana/kibana
+ddf49b9115d7: Already exists
+127ce1da4c72: Pull complete
+0c32fd0051d1: Pull complete
+3cb592252c5c: Pull complete
+a497541f421d: Pull complete
+5f9af552442f: Pull complete
+3d82cb04e9f3: Pull complete
+63f1001938f4: Pull complete
+5795c0f38c9b: Pull complete
+b3f3fe288119: Pull complete
+ad9e03aedb1a: Pull complete
+b65617011d12: Pull complete
+db3a5750fdcf: Pull complete
+Digest: sha256:4a50a0f198a6536b769d8b694ae94e11f2a2bc97cf6dbe61fff98c051cdedc00
+Status: Downloaded newer image for docker.elastic.co/kibana/kibana:7.13.2
+ ---> 6c4869a27be1
+Successfully built 6c4869a27be1
+Successfully tagged elkgrafana_kibana:latest
+WARNING: Image for service kibana was built because it did not already exist. To rebuild this image you must use `docker-compose build` or `docker-compose up --build`.
+Pulling grafana (grafana/grafana:latest)...
+latest: Pulling from grafana/grafana
+540db60ca938: Pull complete
+098a0cea699f: Pull complete
+f8b16078991f: Pull complete
+9073fea3cece: Pull complete
+b56313a23917: Pull complete
+4f4fb700ef54: Pull complete
+2d51f6ff2020: Pull complete
+2ffee8bb6f91: Pull complete
+Digest: sha256:204407ba06f61315b44c2e717b2c74580d51a7d9f240f425363cc0e3e1293e77
+Status: Downloaded newer image for grafana/grafana:latest
+Creating elkgrafana_elasticsearch_1 ... done
+Creating grafana                    ... done
+Creating elkgrafana_logstash_1      ... done
+Creating elkgrafana_kibana_1        ... done
+
+$sudo docker ps
+
+CONTAINER ID   IMAGE                      COMMAND                  CREATED         STATUS         PORTS                                           NAMES
+5a374a6b7158   elkgrafana_logstash        "/usr/local/bin/dock…"   3 minutes ago   Up 3 minutes   0.0.0.0:5000->5000/tcp, :::5000->5000/tcp, 0.0.0.0:5044->5044/tcp, :::5044->5044/tcp, 0.0.0.0:9600->9600/tcp, 0.0.0.0:5000->5000/udp, :::9600->9600/tcp, :::5000->5000/udp   						       elkgrafana_logstash_1
+54e181a19bc9   elkgrafana_kibana          "/bin/tini -- /usr/l…"   3 minutes ago   Up 3 minutes   0.0.0.0:5601->5601/tcp, :::5601->5601/tcp                                                                                                                                    							    elkgrafana_kibana_1
+98e4795c11d2   grafana/grafana:latest     "/run.sh"                3 minutes ago   Up 3 minutes   0.0.0.0:3000->3000/tcp, :::3000->3000/tcp                                                                                                                                    							    grafana
+323c040b7077   elkgrafana_elasticsearch   "/bin/tini -- /usr/l…"   3 minutes ago   Up 3 minutes   0.0.0.0:9200->9200/tcp, :::9200->9200/tcp, 0.0.0.0:9300->9300/tcp, :::9300->9300/tcp                                                                                         						       elkgrafana_elasticsearch_1
+</pre>
+
+--------------------------
+ниже другие попытки
+-------------------------
+> <pre>
+> sudo sysctl -w vm.max_map_count=262144
+> git clone https://github.com/deviantony/docker-elk.git
+> cd docker-elk
+> docker-compose up -d
+> curl localhost:9200
+> </pre>
+> by default<br>
+> user: elastic<br>
+> password: changeme
+</details>
+
+<details><summary>2.  Организовать сбор логов из докера в ELK и получать данные от запущенных контейнеров  </summary>
+
+> Using Logspout  
+> <pre>
+> sudo docker run -d --name="logspout" --volume=/var/run/docker.sock:/var/run/docker.sock gliderlabs/logspout syslog+tls://<elk_server_ip>:5000
+> </pre>
+</details>
+
+<details><summary>3.  Настроить свои дашборды в ELK  </summary>
+
+> ![alt text](https://github.com/rekusha/exadel/blob/master/task7/images/task7_2.3.png)
+</details>
+
+<details><summary> extra 4. Настроить фильтры на стороне Logstash (из поля message получить отдельные поля docker_container и docker_image)  </summary>
+
+> если успею
+</details>
+
+<details><summary> 5. Настроить мониторинг в ELK - получать метрики от ваших запущенных контейнеров  </summary>
+
+> 
+</details>
+
+<details><summary> куда бы деть море "лишнего" времени?! </summary>
 ## Установка Elasticsearch
 копируем себе публичный ключ репозитория
 
