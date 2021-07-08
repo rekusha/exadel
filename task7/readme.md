@@ -30,21 +30,23 @@
 <details><summary> Task 1 - Zabbix  </summary>
 	
 <details><summary> 1.1 Установить на сервер - сконфигурировать веб и базу docker-compouse  </summary>
+<pre>
 curl -fsSL https://get.docker.com -o get-docker.sh
 sh get-docker.sh
-sudo usermod -aG docker ubuntu
+sudo usermod -aG docker $USER
 sudo curl -L "https://github.com/docker/compose/releases/download/1.29.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
-git clone https://github.com/heyValdemar/zabbix-traefik-letsencrypt-docker-compose.git
-	config for yours 
-docker-compose -f zabbix-traefik-letsencrypt-docker-compose.yml -p zabbix up -d
-	
+git clone https://github.com/rekusha/exadel.git
+
+docker-compose -f exadel/task7/zabbix-letsencrypt-docker-compose.yml -p zabbix up -d
+</pre>	
 </details>
 	
 	
 <details><summary> 1.1 Установить на сервер - сконфигурировать веб и базу   </summary>
 
 > <details><summary> some config ubuntu server  </summary>
+	
 > <pre>
 > # apt install openssh
 > # usermod -aG sudo rekusha
