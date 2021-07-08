@@ -28,6 +28,20 @@
 -------
 
 <details><summary> Task 1 - Zabbix  </summary>
+	
+<details><summary> 1.1 Установить на сервер - сконфигурировать веб и базу docker-compouse  </summary>
+curl -fsSL https://get.docker.com -o get-docker.sh
+sh get-docker.sh
+sudo usermod -aG docker ubuntu
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+git clone https://github.com/heyValdemar/zabbix-traefik-letsencrypt-docker-compose.git
+	config for yours 
+docker-compose -f zabbix-traefik-letsencrypt-docker-compose.yml -p zabbix up -d
+	
+</details>
+	
+	
 <details><summary> 1.1 Установить на сервер - сконфигурировать веб и базу   </summary>
 
 > <details><summary> some config ubuntu server  </summary>
@@ -285,6 +299,25 @@ systemctl enable zabbix-server zabbix-agent nginx php7.4-fpm
 
 <details><summary> Task 2 - ELK  </summary>
 
+1.  Installing the ELK Stack  
+<pre>
+sudo sysctl -w vm.max_map_count=262144
+git clone https://github.com/deviantony/docker-elk.git
+cd docker-elk
+docker-compose up -d
+curl localhost:9200
+</pre>
+user: elastic
+password: changeme
+2.  Shipping Docker Logs into ELK  
+Using Logspout  
+<pre>
+sudo docker run -d --name="logspout" --volume=/var/run/docker.sock:/var/run/docker.sock gliderlabs/logspout syslog+tls://192.168.0.230:5000
+</pre>
+3.  Parsing the Data  
+
+
+<details><summary> куда бы деть море лишнего времени?! </summary>
 ## Установка Elasticsearch
 копируем себе публичный ключ репозитория
 
@@ -510,6 +543,9 @@ geoip {
 Можете проверить на всякий случай лог /var/log/logstash/logstash-plain.log, чтобы убедиться в том, что все в порядке. Признаком того, что скачанная geoip база успешно добавлена будет вот эта строчка в логе:
 
 [2021-02-14T22:39:07,111][INFO ][logstash.filters.geoip ][main] Using geoip database {:path=>"/etc/logstash/GeoLite2-City.mmdb"}
-
-
 </details>
+
+
+
+
+<details>
