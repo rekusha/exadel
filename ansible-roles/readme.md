@@ -1,1 +1,4 @@
-in this place i'm collect all role what i used
+install ansible
+sudo apt-add-repository ppa:ansible/ansible && sudo apt-get update && sudo apt-get install -y ansible
+
+roles:
