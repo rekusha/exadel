@@ -79,7 +79,7 @@ task7
 </details>
   
 <details><summary>ansible.cfg</summary>
-  здесь должны храниться конфигурации как общие так и для конерктных групп и хостов
+  здесь должны храниться конфигурации как общие так и для конерктных хостов
 <pre>
 [defaults]
 host_key_cheking               = false
@@ -87,4 +87,18 @@ inventiry                      = ./hosts
 ansible_user                   = ubuntu 
 ansible_ssh_private_key_title  = ~/.ssh/exadel_key
 </pre>
-</details></details>
+</details>
+<details><summary>groupe_vars</summary>
+здесь должны храниться конфигурации для групп хостов<br>
+<pre>
+.  
+├── ansible.cfg  # cfg for all 
+├── groupe_vars
+│   ├── task3
+│   │     # vars for task3 group hosts
+│   └── task5
+│         # vars for task3 group hosts
+└── hosts  # inventory file for project
+</pre>
+</details>
+</details>
