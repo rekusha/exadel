@@ -27,11 +27,21 @@ sudo apt-get install -y ansible
 <details><summary>ansible ad-hoc</summary>
 <pre>
 ansible <groupe_name/server_name/ip> -m <module_name> -a <argument>
+
 ansible all -m ping
-ansible 10.0.0.1 -m ping
-ansible 10.0.0.1 -m shell -a "uptime"
-ansible 10.0.0.1 -m command -a "uptime" # тоже что и shell но без пайплайнов и энвайремент переменных
-ansible 10.0.0.1 -m copy -a "src=filename dst=/home mode=777" -b  # -b это sudo привелегии для выполняемой команды
+ansible all -m shell -a "uptime"
+ansible all -m command -a "uptime" # тоже что и shell но без пайплайнов и энвайремент переменных
+ansible all -m copy -a "src=filename dst=/home mode=777" -b  # -b это sudo привелегии для выполняемой команды
+ansible all -m file -a "path=/home/file.txt state=absent" -b  # состояние файла отсутствует (проверяет что такого файла нет по пути, а если есть то удаляет)
+
+ansible all -m apt -a "name=httpd state=latest(absent)" -b  # установка пакетов с помощью apt
+ansible all -m service -a "name=httpd state=started enabled=yes" -b  # приложение запустить и enabled - добавить в автозапуск
+ansible all -m apt -a "name=httpd state=absent" -b  # удаление пакета
+
+ansible all -m uri -a "url=http://site.com"  # проверка доступности ресурса по имени сайта
+ansible all -m uri -a "url=http://site.com return_content=yes"  # return_content=yes - возвращает контент курл запроса (по умолчанию не возвращает)
+ansible all -m get_url -a"url=link_to_file dest=~/"  # скачать файл из интернета по указанному пути
+
 </pre>
 </details>
 
