@@ -101,4 +101,25 @@ ansible_ssh_private_key_title  = ~/.ssh/exadel_key
 └── hosts  # inventory file for project
 </pre>
 </details>
+
+.
+└── apache2
+    ├── defaults  # default vars
+    │   └── main.yml
+    ├── files
+    ├── handlers  # handlers
+    │   └── main.yml
+    ├── meta
+    │   └── main.yml
+    ├── README.md
+    ├── tasks  # tasks for role
+    │   └── main.yml
+    ├── templates  # templates
+    ├── tests
+    │   ├── inventory
+    │   └── test.yml
+    └── vars  # vars
+        └── main.yml
+
+
 </details>
