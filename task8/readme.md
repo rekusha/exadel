@@ -1,14 +1,15 @@
 try to ci/cd wagtail (https://github.com/wagtail/wagtail) with dicker, gitlab, kubernetis  
   
 1. do app docer-compose local  
-
-$ python3 -m venv venv
-$ source venv/bin/activate
-$ pip install --upgrade pip
-$ pip install wagtail
-$ wagtail start app
-$ deactivate
-$ rm -r venv/
+<pre>
+$ python3 -m venv venv  
+$ source venv/bin/activate  
+$ pip install --upgrade pip  
+$ pip install wagtail  
+$ wagtail start app  
+$ deactivate  
+$ rm -r venv/  
+</pre>
 
 <details><summary>$ nano .env.dev</summary>
 <pre>
@@ -132,5 +133,12 @@ services:
 volumes:
     postgres_data:
 </pre></details>
+<pre>
+$ docker-compose up -d --build  
+</pre>
+At this moment we have working web project at port 8000 with posgres db in different container
 
-$ docker-compose up -d --build
+For create admin user execute
+<pre>
+docker-compose exec web python manage.py createsuperuser --settings=app.settings.dev
+</pre>
