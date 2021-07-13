@@ -38,12 +38,12 @@ POSTGRES_DB=demo_wagtail
 $ echo 'psycopg2-binary==2.8.6' >> app/requirements.txt
 </pre>
 
-<details><summary>$ nano app/app/settings/dev.py</summary>
+<details><summary>$ nano app/app/settings/base.py</summary>
 <pre>
 remove DATABASES section
 </pre></details>
 
-<details><summary>$ nano app/app/settings/base.py</summary>
+<details><summary>$ nano app/app/settings/dev.py</summary>
 <pre>
 # Add Database PostgreSQL
 DATABASES = {
