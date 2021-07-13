@@ -2,6 +2,7 @@ try to ci/cd wagtail (https://github.com/wagtail/wagtail) with dicker, gitlab, k
   
 1. do app docer-compose local  
 <pre>
+$ sudo apt install python3-pip python3-venv
 $ python3 -m venv venv  
 $ source venv/bin/activate  
 $ pip install --upgrade pip  
