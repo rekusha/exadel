@@ -1,8 +1,24 @@
-try to ci/cd wagtail (https://github.com/wagtail/wagtail) with dicker, gitlab, kubernetis  
+try to ci/cd wagtail (https://github.com/wagtail/wagtail) with docker, gitlab, kubernetis in google cloud
+
+env: 2 linux instance with clear ubuntu 20.10 (1 - for work, 2 - for gitlab runners)
+
+<details><summary>подготовка рабочего окружения (файлов проекта)</summary>
   
-1. do app docer-compose local  
+создаем репозторий на gitlab (https://gitlab.com/rekusha/exadel_task8)  
+клонируем его на локальную машину  
+  <pre>
+  $ mkdir task8 && cd task8
+  $ git clone https://gitlab.com/rekusha/exadel_task8.git  
+  </pre>
+перемещаемся в папку репозитория  
+  <pre>
+  $ cd exadel_task8  
+  </pre>
+  
+подготавливаем файлы приложения:  
 <pre>
-$ sudo apt install python3-pip python3-venv
+$ sudo apt update
+$ sudo apt install python3-pip python3-venv 
 $ python3 -m venv venv  
 $ source venv/bin/activate  
 $ pip install --upgrade pip  
@@ -10,42 +26,18 @@ $ pip install wagtail
 $ wagtail start app  
 $ deactivate  
 $ rm -r venv/  
+
+>>>> одной строкой: sudo apt update && sudo apt install python3-pip python3-venv && python3 -m venv venv && source venv/bin/activate && pip install --upgrade pip && pip install wagtail && wagtail start app && deactivate && rm -r venv/
 </pre>
 
-<details><summary>$ nano .env.dev</summary>
-<pre>
-DEBUG=True
-SECRET_KEY=[Your SECRET_KEY]
-DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
-
-SQL_ENGINE=django.db.backends.postgresql_psycopg2
-SQL_DATABASE=demo_wagtail
-SQL_USER=demouser
-SQL_PASSWORD=DemoPass
-SQL_HOST=db
-SQL_PORT=5432
-DATABASE=postgres
-</pre></details>
-
-<details><summary>$ nano .env.dev.db</summary>
-<pre>
-POSTGRES_USER=demouser
-POSTGRES_PASSWORD=DemoPass
-POSTGRES_DB=demo_wagtail
-</pre></details>
-
+  Добавим зависимость для работы прилодения с postgresql  
 <pre>
 $ echo 'psycopg2-binary==2.8.6' >> app/requirements.txt
 </pre>
 
 <details><summary>$ nano app/app/settings/base.py</summary>
+изменить секцию DATABASE на:
 <pre>
-remove DATABASES section
-</pre></details>
-
-<details><summary>$ nano app/app/settings/dev.py</summary>
-<pre>
-# Add Database PostgreSQL
 DATABASES = {
     'default': {
         'ENGINE': os.environ.get("SQL_ENGINE"),
@@ -58,85 +50,111 @@ DATABASES = {
 }
 </pre></details>
 
-<details><summary>$ nano app/entrypoint.sh</summary>
+<details><summary>$ nano app/Dockerfile (образ по умолчанию может не существовать, поэтому меняем)</summary>
+change FROM to:
 <pre>
-#!/bin/sh
-
-if [ "$DATABASE" = "postgres" ]
-then
-    echo "Waiting for postgres..."
-
-    while ! nc -z $SQL_HOST $SQL_PORT; do
-      sleep 0.1
-    done
-
-    echo "PostgreSQL started"
-fi
-
-python manage.py makemigrations --settings=app.settings.dev
-python manage.py migrate --settings=app.settings.dev
-
-exec "$@"
+python:3.9.6-slim-buster
 </pre></details>
 
-<details><summary>$ nano app/Dockerfile</summary>
+<details><summary>$ nano app/.env.test (минимальное тестовое окружение для проверки образа после сборки)</summary>
 <pre>
-FROM python:3.8.5-alpine3.12
-
-WORKDIR /usr/src/app
-
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-
-RUN apk update \
-    && apk add postgresql-dev gcc python3-dev musl-dev libffi-dev openssl-dev \
-    && apk add jpeg-dev libwebp-dev zlib-dev freetype-dev lcms2-dev openjpeg-dev tiff-dev tk-dev tcl-dev libxml2-dev libxslt-dev libxml2
-
-RUN pip install --upgrade pip
-COPY ./requirements.txt /usr/src/app/requirements.txt
-RUN pip install -r requirements.txt
-
-# Postgres Entrypoint
-COPY entrypoint.sh /usr/src/app/entrypoint.sh
-ENTRYPOINT ["sh", "/usr/src/app/entrypoint.sh"]
+DEBUG=True
+DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+SQL_ENGINE=django.db.backends.sqlite3
+SQL_DATABASE=:memory:
 </pre></details>
 
-<details><summary>$ nano docker-compose.yml</summary>
+<details><summary> подготовка контейнера nginx (думаю потом можно будет перенести настройку в кубернетис с помощю конфигов)</summary>
 <pre>
-version: '3.7'
-
-services:
-  web:
-    build: app
-    command: python manage.py runserver 0.0.0.0:8000 --settings=app.settings.dev
-    volumes:
-      - ./app/:/usr/src/app/
-    ports:
-      - 8000:8000
-    env_file:
-      - .env.dev
-    depends_on:
-      - db
-      
-  db:
-    image: postgres:12.2-alpine
-    restart: always
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    env_file:
-      - .env.dev.db
-
-volumes:
-    postgres_data:
-</pre></details>
-<pre>
-$ docker-compose up -d --build  
+$ mkdir -p config/nginx
+$ nano config/nginx/nginx.conf
 </pre>
-At this moment we have working web project at port 8000 with posgres db in different container
 
-For create admin user execute
 <pre>
-docker-compose exec web python manage.py createsuperuser --settings=app.settings.dev
+upstream app {server app:8000;}
+
+server {listen 80;
+	location / {proxy_pass http://app;}
+#	location /static/ {alias /home/app/static/;}
+}
 </pre>
+
+<pre>
+$ nano config/nginx/Dockerfile
+</pre>
+
+<pre>
+FROM nginx:1.19.0-alpine
+
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+</pre></details>
+
+<details><summary>$ nano .gitlab-ci.yml (подготовка пайплайна для CI)</summary>
+<pre>
+variables:
+  RUNNNER_INSTANCE_URL: http://localhost:8000/
+  STATUS_CODE: '200'
+  APP_NAME: app
+  CI_GROUP: rekusha
+  CI_REP_NAME: exadel_task8
+  TEST_CONTAINER: container1 
+  KUBER_CLUSTER_NAME: project8
+  KUBER_PROJECT_NAME: app
+
+stages:
+  - build
+  - test
+  - deploy
+
+build_job:
+  stage: build
+  script:
+    - docker build -t $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:latest app/
+  tags:
+     - shell2test
+     
+unit_test:
+  stage: test
+  script:
+    - docker run -i --rm --env-file app/.env.test -p 8000:8000 $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:latest python3 manage.py test
+  tags:
+     - shell2test
+
+status_code_test:
+  stage: test
+  script:
+    - docker run -d --env-file app/.env.test -p 8000:8000 --name $TEST_CONTAINER $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:latest
+    - sleep 10
+    - response=$( curl --write-out "%{http_code}\n" --silent --output /dev/null $RUNNNER_INSTANCE_URL)
+    - docker stop $TEST_CONTAINER
+    - docker rm $TEST_CONTAINER
+    - if [ $response -eq $STATUS_CODE ]; then echo 'app response is correct'; else echo 'Something is wrong'; exit 1; fi
+  tags:
+     - shell2test
+
+push_to_repository:
+  stage: deploy
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker push $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:latest
+    - docker tag $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:latest $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:$CI_COMMIT_SHORT_SHA
+    - docker push $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:$CI_COMMIT_SHORT_SHA
+  tags:
+     - shell2test
+
+deploy_to_gcloud:
+  stage: deploy
+  script:
+    - helm upgrade --install app project-deploy-helm/
+    - kubectl get pods
+  tags:
+     - shell2test
+</pre></details>
+
+<pre>
+git config --global user.email "you@example.com"
+git config --global user.name "Your Name"
+git add .
+git commit -m "push files to repo"
+git push
+</pre></details>
