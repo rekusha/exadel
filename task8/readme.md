@@ -207,6 +207,9 @@ $ sudo EDITOR=nano visudo
 в конец файла добавить строку
 gitlab-runner ALL=(ALL:ALL) NOPASSWD:ALL
 
+sudo passwd gitlab-runner - устанавливаем пароль на ранера
+
+>> passwd: password updated successfully
 </pre></details>
 
 <details><summary>Подготовка Kubernetes </summary>  
@@ -223,7 +226,7 @@ $ gcloud init
 
 соглашаемся залогиниться в нужную учетку
 переходим по ссылке
-логинимся в нужныю учетную запись гугла
+логинимся в нужную учетную запись гугла
 соглашаемся с предоставлением ресурсов
 копируем ответную строку и вставляем в поле нп клиенте
 после чего соглашаемся выбрать регион и указываем на нужный нам регион (14)
@@ -245,6 +248,7 @@ $ gcloud services enable container.googleapis.com
 
 Устанавливаем kubectl: (на обеих машинах)
 $ sudo apt install kubectl
+$ gcloud container clusters get-credentials task8 !!!!!!!!!!!!!!!!!!!!! подтягивает конфиг если он не подтянулся автоматом
 
 Устанавливаем Helm Charts: (на обеих машинах)
 wget https://get.helm.sh/helm-v3.6.3-linux-amd64.tar.gz
