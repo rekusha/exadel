@@ -202,5 +202,59 @@ $ sudo usermod -aG docker $USER
 $ sudo usermod -aG docker gitlab-runner
 $ newgrp docker 
 $ sudo systemctl enable docker.service && sudo systemctl enable containerd.service
+$ sudo EDITOR=nano visudo
+
+в конец файла добавить строку
+gitlab-runner ALL=(ALL:ALL) NOPASSWD:ALL
+
 </pre></details>
 
+<details><summary>Подготовка Kubernetes </summary>  
+
+Используем GoogleCloud.  
+После создания аккаунта и активации службы ComputerEngine(Virtual Machines) необходимо установить google cloud sdk. (на обеих инстансах /ранер и "рабочая")  
+<pre>
+$ echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+$ sudo apt-get install -y apt-transport-https ca-certificates gnupg
+$ curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+$ sudo apt-get update && sudo apt-get install -y google-cloud-sdk
+$ gcloud init
+
+
+соглашаемся залогиниться в нужную учетку
+переходим по ссылке
+логинимся в нужныю учетную запись гугла
+соглашаемся с предоставлением ресурсов
+копируем ответную строку и вставляем в поле нп клиенте
+после чего соглашаемся выбрать регион и указываем на нужный нам регион (14)
+
+>> Your project default Compute Engine zone has been set to [europe-west4-a].
+>> You can change it by running [gcloud config set compute/zone NAME].
+>>
+>> Your project default Compute Engine region has been set to [europe-west4].
+>>You can change it by running [gcloud config set compute/region NAME].
+>>
+>> Created a default .boto configuration file at [/root/.boto]. See this file and
+>> [https://cloud.google.com/storage/docs/gsutil/commands/config] for more
+>> information about configuring Google Cloud Storage.
+>> Your Google Cloud SDK is configured and ready to use!
+
+
+Активируем Kubernetes:
+$ gcloud services enable container.googleapis.com
+
+Устанавливаем kubectl: (на обеих машинах)
+$ sudo apt install kubectl
+
+Устанавливаем Helm Charts: (на обеих машинах)
+wget https://get.helm.sh/helm-v3.6.3-linux-amd64.tar.gz
+tar -xf helm-v3.6.3-linux-amd64.tar.gz
+cd linux-amd64/
+sudo mv helm /bin/
+
+создаем кластер:
+$ gcloud container clusters create task8
+
+
+
+</pre></details>
