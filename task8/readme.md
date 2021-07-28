@@ -61,7 +61,9 @@ python:3.9.6-slim-buster
 DEBUG=True
 DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
 SQL_ENGINE=django.db.backends.sqlite3
-SQL_DATABASE=:memory:
+SQL_DATABASE=$SQL_DATABASE
+SQL_USER=$SQL_USER
+SQL_PASSWORD=$SQL_PASSWORD
 </pre></details>
 
 <details><summary> подготовка контейнера nginx (думаю потом можно будет перенести настройку в кубернетис с помощю конфигов)</summary>
@@ -89,7 +91,19 @@ FROM nginx:1.19.0-alpine
 COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 </pre></details>
 
+<details><summary> gitlab переменные окружения</summary>  
+Для сборки и проверки работы нашего образа, нам понадобятся некоторые переменные, которые не зотелось бы светить в коде, поэтому добавим их в переменные окружения гитлаба
+<pre>
+settings - CI/CD - Variables - Add variable
+SQL_USER: demouser
+SQL_PASSWORD: DemoPass
+POSTGRES_USER: demouser
+POSTGRES_PASSWORD: DemoPass
+SECRET_KEY: [Your SECRET_KEY]
+</pre></details>
+	
 <details><summary>$ nano .gitlab-ci.yml (подготовка пайплайна для CI)</summary>
+	
 <pre>
 variables:
   RUNNNER_INSTANCE_URL: http://localhost:8000/
@@ -123,12 +137,12 @@ unit_test:
 status_code_test:
   stage: test
   script:
-    - docker run -d --env-file app/.env.test -p 8000:8000 --name $TEST_CONTAINER $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:latest
-    - sleep 10
-    - response=$( curl --write-out "%{http_code}\n" --silent --output /dev/null $RUNNNER_INSTANCE_URL)
+    - docker run -d --rm --env-file app/.env.test -p 8000:8000 --name $TEST_CONTAINER $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:latest
+    - sleep 20
+    - export RESPONSE=$(curl --write-out "%{http_code}\n" --silent --output /dev/null $RUNNNER_INSTANCE_URL)
+    - echo $RESPONSE
     - docker stop $TEST_CONTAINER
-    - docker rm $TEST_CONTAINER
-    - if [ $response -eq $STATUS_CODE ]; then echo 'app response is correct'; else echo 'Something is wrong'; exit 1; fi
+    - if [ $RESPONSE -eq $STATUS_CODE ]; then echo 'app response is correct'; else echo 'Something is wrong'; exit 1; fi
   tags:
      - shell2test
 
@@ -158,3 +172,35 @@ git add .
 git commit -m "push files to repo"
 git push
 </pre></details>
+
+
+<details><summary>Настройка gitlab shell ранеда </summary>  
+установка шелл ранера описывается на странице документации (https://docs.gitlab.com/runner/install/linux-repository.html)  
+установка производится на подготовленном инстансе для ранеров (ubuntu 20.10 чистая установка)
+
+<pre>
+$ curl -L "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh" | sudo bash
+$ sudo apt-get install gitlab-runner
+$ sudo gitlab-runner register
+вносим данные для регистрации ранера
+https://gitlab.com/
+токен которій получаете в гитлаб репозитории Settings - CI/CD - Runners - Specific runners - And this registration token: (там же передвинуть ползунок для отключения использования общедоступных ранеров)
+gitlab-runner - описание ранера
+shell2test - тэг ранера по которому можно будет назначить работу конкретно на этот ранер
+shell - указываем экзекьютора который будет выполнятся на ранере
+
+> Runner registered successfully.
+
+так как в проекте подразумевается использование доккера, то ставим и докер
+$ sudo apt-get update
+$ sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
+$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+$ echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+$ sudo apt-get update && sudo apt-get install docker-ce docker-ce-cli containerd.io
+$ sudo groupadd docker
+$ sudo usermod -aG docker $USER 
+$ sudo usermod -aG docker gitlab-runner
+$ newgrp docker 
+$ sudo systemctl enable docker.service && sudo systemctl enable containerd.service
+</pre></details>
+
