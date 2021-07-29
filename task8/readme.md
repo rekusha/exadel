@@ -540,6 +540,58 @@ git push
 
 на данном этапе у нас поднимается постгрес(готовый к работе), вагтэйл(еоннектится к постгресу) и графана(пока не настроенная)  
 
+<details><summary> Создание serviceUser k8s для настройки бэкапов и графаны </summary>
+
+<pre>
+$ gcloud iam service-accounts create serviceuser  - создаст пользователя serviceuser 
+Created service account [serviceuser].
+
+
+соотнесем созданного пользователя с проектом и назначим ему нужные привилегии
+$ gcloud projects add-iam-policy-binding exadel-task-8 --member="serviceAccount:serviceuser@exadel-task-8.iam.gserviceaccount.com" --role="roles/owner"
+-----------
+Updated IAM policy for project [exadel-task-8].
+bindings:
+...
+- members:
+  - serviceAccount:serviceuser@exadel-task-8.iam.gserviceaccount.com
+  - user:rekusha@gmail.com
+  role: roles/owner
+...
+-----------
+
+
+генерируем файл ключей для доступа соданного пользователя к проекту
+$ gcloud iam service-accounts keys create task8key.json --iam-account=serviceuser@exadel-task-8.iam.gserviceaccount.com
+-----------
+created key [8afc59f7c32614db04f72eee4509ceab931a3878] of type [json] as [task8key.json] for [serviceuser@exadel-task-8.iam.gserviceaccount.com]
+-----------
+
+
+в итоге у нас есть файл с кредами для аутентификации от имени созданного пользователя
+$ cat task8key.json
+-----------
+{
+  "type": "service_account",
+  "project_id": "exadel-task-8",
+  "private_key_id": "8afc59f7c32614db04f72eee4509ceab931a3878",
+  "private_key": "-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----",
+  "client_email": "serviceuser@exadel-task-8.iam.gserviceaccount.com",
+  "client_id": "100352356826156311325",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/backupuser%40exadel-task-8.iam.gserviceaccount.com"
+}
+-----------
+
+
+kubectl create secret generic task8backup --from-file=key.json=task8key.json (копируем ключи в секреты кубернетиса)
+
+</pre></details>
+
+
+
 <details><summary> grafana </summary>
 
 <pre>
@@ -550,51 +602,100 @@ git push
 <details><summary> postgres backup </summary>
 
 <pre>
+Для хранения бэкапов следует создать корзину
 $ gsutil mb -l europe-west4 gs://task8backup
+Creating gs://task8backup/...
 </pre>
+	
+для того чтобы выполнять резервное копирование надо создать CronJob которая будет понимать заранее подготовленный докер образ и передавать ему переменные необходимые для монтирования корзины созданной шагом выше и создания дампа бд после подключения к нужному ресурсу. для этого создадим Dockerfile собирающий все необходимое в одном контейнере и скрипт выполняющий по сути монтирование корзины, создание и запись бэкапа в корзину, отмонтирование корзины
 
+<details><summary> Dockerfile</summary>	
+$ mkdir ~/task8/pgbackup  
+$ cd ~/task8/pgbackup  
+$ nano Dockerfile  
+
+<pre>
+FROM ubuntu:20.04
+
+ENV BACKUP_DIR=/home/postgres/backup
+ENV PGTZ=Europe/Kiev
+
+RUN apt-get update
+RUN apt-get install -y lsb-release wget gnupg && apt-get clean all
+RUN apt install -y vim bash-completion wget
+RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
+RUN apt update
+RUN apt install -y postgresql-client
+
+RUN lsb_release -c -s > /tmp/lsb_release
+RUN GCSFUSE_REPO=$(cat /tmp/lsb_release); echo "deb http://packages.cloud.google.com/apt gcsfuse-$GCSFUSE_REPO main" | tee /etc/apt/sources.list.d/gcsfuse.list
+RUN wget -O - https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+
+RUN apt-get update
+RUN apt-get install -y gcsfuse
+
+RUN useradd -rm -d /home/postgres -s /bin/bash -g root -G sudo -u 1001 postgres
+
+ADD docker-entrypoint.sh /home/postgres/docker-entrypoint.sh
+RUN chmod +x /home/postgres/docker-entrypoint.sh && chown postgres /home/postgres/docker-entrypoint.sh
+
+ENTRYPOINT ["/home/postgres/docker-entrypoint.sh"]
+
+</pre></details>
+
+	
+<details><summary> docker-entrypoint.sh</summary>
+
+<pre>
+#!/bin/bash
+mkdir $BACKUP_DIR
+gcsfuse --key-file=$KEY_PATH $BASKET_NAME $BACKUP_DIR
+pg_dump --dbname=postgresql://$SQL_USER:$SQL_PASSWORD@$SQL_HOST:$SQL_PORT/$SQL_DB > $BACKUP_DIR/"$SQL_DB-$(date -u +"%FT%H%MZ").sql"
+exec fusermount -u $BACKUP_DIR
+</pre></details>
+
+<details><summary> собираем образ и пушим его в репозиторий </summary>
+	
+<pre>
+$ docker login -u rekusha -p <password> registry.gitlab.com
+$ docker build -t registry.gitlab.com/rekusha/exadel_task8/pgdump:latest ./
+$ docker push registry.gitlab.com/rekusha/exadel_task8/pgbackup:latest
+</pre></details>
+  
+	
 <details><summary> $ nano project-deploy-helm/templates/postgresql-cloud-dump.yaml</summary>
 	
 <pre>
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: postgresql-cloud-dump
-  namespace: default
+  name: postgres-backup
 spec:
-  schedule: "0 */1 * * *"
+  schedule: "0 /6   "
+  successfulJobsHistoryLimit: 0
+  failedJobsHistoryLimit: 0
   jobTemplate:
     spec:
       template:
         spec:
           containers:
-          - name: postgresql-cloud-dump
-            image: settler/postgresql-cloud-dump
-	    imagePullPolicy: IfNotPresent
-            env:
-            - name: PGDATABASE
-              value: {{ .Values.db.env.postgres_db }}
-            - name: PGHOST
-              value: {{ .Values.db.service.name }}
-            - name: PGPORT
-              value: {{ .Values.app.env.sql_port }}
-            - name: PGUSER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.db.env.secret }}
-                  key: SQL_USER
-            - name: PGPASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.db.env.secret }}
-                  key: SQL_PASSWORD
-            - name: OUTPUT
-              value: GoogleCloud
-            - name: BUCKET
-              value: task8backup
-            - name: BACKUP_THRESHOLD
-              value: 2d
-          restartPolicy: OnFailure
-
+          - name: postgres-backup 
+            image: yurickch/docker-gcs:latest
+            envFrom: <<<<<<<<<<<<<<<<<<< переписать переменные!!
+            - configMapRef:
+                name: backup-config
+            securityContext:
+              privileged: true
+              capabilities:
+                add: ["SYS_ADMIN"]
+            volumeMounts:
+              - name: secret-volume
+                mountPath: /var/secrets
+          restartPolicy: Never
+          volumes:
+            - name: secret-volume
+              secret:
+                secretName: task8backup
 </pre></details></details>
 
