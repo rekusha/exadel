@@ -284,6 +284,7 @@ maintainers:
    - container_registory: https://gitlab.com/rekusha/exadel_task8/container_registry
 </pre></details>
 <details><summary> nano project-deploy-helm/values.yaml </summary>
+	
 <pre>
 #docker images:
 containers:
@@ -340,6 +341,7 @@ secrets:
 
 </pre></details>
 <details><summary> nano project-deploy-helm/templates/deployment.yaml </summary>
+	
 <pre>
 # PostgreSQL StatefulSet
 apiVersion: apps/v1
@@ -455,6 +457,8 @@ spec:
 
 </pre></details>
 <details><summary> nano project-deploy-helm/templates/hpa-v2.yaml </summary>
+
+<pre>
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
@@ -471,8 +475,6 @@ spec:
     resource:
       name: cpu
       targetAverageUtilization: {{ .Values.app.hpa.resource.cpu }}
-
-<pre>
 </pre></details>
 <details><summary> nano project-deploy-helm/templates/secret.yaml </summary>
 <pre>
@@ -491,6 +493,7 @@ data:
 
 </pre></details>
 <details><summary> nano project-deploy-helm/templates/service.yaml </summary>
+	
 <pre>
 # PostgreSQL StatefulSet Service
 apiVersion: v1
@@ -536,7 +539,13 @@ spec:
 
 на данном этапе у нас поднимается постгрес(готовый к работе), вагтэйл(еоннектится к постгресу) и графана(пока не настроенная)  
 
-<details><summary> grafana </summary><pre></pre></details>
+<details><summary> grafana </summary>
+
+<pre>
+
+</pre></details>
+
+
 <details><summary> postgres backup </summary>
 
 <pre>
