@@ -79,10 +79,11 @@ $ gcloud services enable container.googleapis.com
 $ sudo apt install kubectl
 
 Устанавливаем Helm Charts: (на обеих машинах)
-wget https://get.helm.sh/helm-v3.6.3-linux-amd64.tar.gz
-tar -xf helm-v3.6.3-linux-amd64.tar.gz
-cd linux-amd64/
-sudo mv helm /bin/
+$ wget https://get.helm.sh/helm-v3.6.3-linux-amd64.tar.gz
+$ tar -xf helm-v3.6.3-linux-amd64.tar.gz
+$ cd linux-amd64/
+$ sudo mv helm /bin/
+$ cd ~ && rm -rf ~/linux-amd64/ && rm ~/helm-v3.6.3-linux-amd64.tar.gz
 
 создаем кластер:
 $ gcloud container clusters create task8
