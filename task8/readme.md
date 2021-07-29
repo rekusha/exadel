@@ -537,4 +537,54 @@ spec:
 на данном этапе у нас поднимается постгрес(готовый к работе), вагтэйл(еоннектится к постгресу) и графана(пока не настроенная)  
 
 <details><summary> grafana </summary><pre></pre></details>
-<details><summary> postgres backup </summary><pre></pre></details>
+<details><summary> postgres backup </summary>
+
+<pre>
+$ gsutil mb -l europe-west4 gs://task8backup
+</pre>
+
+<details><summary> $ nano project-deploy-helm/templates/postgresql-cloud-dump.yaml</summary>
+	
+<pre>
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: postgresql-cloud-dump
+  namespace: default
+spec:
+  schedule: "0 */1 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: postgresql-cloud-dump
+            image: settler/postgresql-cloud-dump
+	    imagePullPolicy: IfNotPresent
+            env:
+            - name: PGDATABASE
+              value: {{ .Values.db.env.postgres_db }}
+            - name: PGHOST
+              value: {{ .Values.db.service.name }}
+            - name: PGPORT
+              value: {{ .Values.app.env.sql_port }}
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.db.env.secret }}
+                  key: SQL_USER
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.db.env.secret }}
+                  key: SQL_PASSWORD
+            - name: OUTPUT
+              value: GoogleCloud
+            - name: BUCKET
+              value: task8backup
+            - name: BACKUP_THRESHOLD
+              value: 2d
+          restartPolicy: OnFailure
+
+</pre></details></details>
+
