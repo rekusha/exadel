@@ -148,7 +148,7 @@ python:3.9.6-slim-buster
 DEBUG=True
 DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
 SQL_ENGINE=django.db.backends.sqlite3
-SQL_DATABASE=$SQL_DATABASE
+SQL_DATABASE=DemoBase
 SQL_USER=$SQL_USER
 SQL_PASSWORD=$SQL_PASSWORD
 </pre></details>
