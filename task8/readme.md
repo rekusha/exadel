@@ -77,7 +77,6 @@ $ gcloud services enable container.googleapis.com
 
 Устанавливаем kubectl: (на обеих машинах)
 $ sudo apt install kubectl
-$ gcloud container clusters get-credentials task8 !!!!!!!!!!!!!!!!!!!!! подтягивает конфиг если он не подтянулся автоматом
 
 Устанавливаем Helm Charts: (на обеих машинах)
 wget https://get.helm.sh/helm-v3.6.3-linux-amd64.tar.gz
@@ -87,6 +86,8 @@ sudo mv helm /bin/
 
 создаем кластер:
 $ gcloud container clusters create task8
+
+$ gcloud container clusters get-credentials task8 !!!!!!!!!!!!!!!!!!!!! подтягивает конфиг если он не подтянулся автоматом
 </pre></details>
 
 <details><summary>подготовка рабочего окружения (файлов проекта)</summary>
