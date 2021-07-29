@@ -252,15 +252,7 @@ deploy_to_gcloud:
   tags:
      - shell2test
 
-</pre></details>
-
-<pre>
-git config --global user.email "you@example.com"
-git config --global user.name "Your Name"
-git add .
-git commit -m "push files to repo"
-git push
-</pre></details>
+</pre></details></details>
 
 <details><summary> Helm Chart </summary>
 	
@@ -536,8 +528,15 @@ spec:
     - port: {{ .Values.grafana.service.port }}
       targetPort: {{ .Values.grafana.service.targetPort }}
 
-</pre></details>
-</details>
+</pre></details></details>
+	
+<pre>
+git config --global user.email "you@example.com"
+git config --global user.name "Your Name"
+git add .
+git commit -m "push files to repo"
+git push
+</pre>
 
 на данном этапе у нас поднимается постгрес(готовый к работе), вагтэйл(еоннектится к постгресу) и графана(пока не настроенная)  
 
