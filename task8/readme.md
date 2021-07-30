@@ -660,7 +660,7 @@ exec fusermount -u $BACKUP_DIR
 <pre>
 $ docker login -u rekusha -p PASSWORD registry.gitlab.com
 $ docker build -t registry.gitlab.com/rekusha/exadel_task8/pgdump:latest ./
-$ docker push registry.gitlab.com/rekusha/exadel_task8/pgbackup:latest
+$ docker push registry.gitlab.com/rekusha/exadel_task8/pgdump:latest
 </pre></details>
   
 	
@@ -681,7 +681,7 @@ spec:
         spec:
           containers:
           - name: postgres-backup 
-            image: registry.gitlab.com/rekusha/exadel_task8/pgbackup
+            image: registry.gitlab.com/rekusha/exadel_task8/pgdump
 	    
 	    env:
             - name: KEY_PATH
