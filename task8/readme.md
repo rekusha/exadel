@@ -672,7 +672,7 @@ kind: CronJob
 metadata:
   name: postgres-backup
 spec:
-  schedule: "0 /6   "
+  schedule: "0 /2 * * *"
   successfulJobsHistoryLimit: 0
   failedJobsHistoryLimit: 0
   jobTemplate:
@@ -681,17 +681,39 @@ spec:
         spec:
           containers:
           - name: postgres-backup 
-            image: yurickch/docker-gcs:latest
-            envFrom: <<<<<<<<<<<<<<<<<<< переписать переменные!!
-            - configMapRef:
-                name: backup-config
+            image: registry.gitlab.com/rekusha/exadel_task8/pgbackup
+	    
+	    env:
+            - name: KEY_PATH
+              value: /var/secrets/key.json
+            - name: BASKET_NAME
+              value: task8backup
+            - name: SQL_USER
+	      valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.db.env.secret }}
+                  key: POSTGRES_USER
+            - name: SQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.db.env.secret }}
+                  key: POSTGRES_PASSWORD
+            - name: SQL_HOST
+              value: {{ .Values.db.service.name }}
+            - name: SQL_PORT
+              value: {{ .Values.app.env.sql_port }}
+            - name: SQL_DB
+              value: {{ .Values.db.env.postgres_db }}
+            
             securityContext:
               privileged: true
               capabilities:
                 add: ["SYS_ADMIN"]
+		
             volumeMounts:
               - name: secret-volume
                 mountPath: /var/secrets
+		
           restartPolicy: Never
           volumes:
             - name: secret-volume
