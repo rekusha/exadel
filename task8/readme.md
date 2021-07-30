@@ -658,7 +658,7 @@ exec fusermount -u $BACKUP_DIR
 <details><summary> собираем образ и пушим его в репозиторий </summary>
 	
 <pre>
-$ docker login -u rekusha -p <password> registry.gitlab.com
+$ docker login -u rekusha -p PASSWORD registry.gitlab.com
 $ docker build -t registry.gitlab.com/rekusha/exadel_task8/pgdump:latest ./
 $ docker push registry.gitlab.com/rekusha/exadel_task8/pgbackup:latest
 </pre></details>
