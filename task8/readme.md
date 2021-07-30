@@ -541,28 +541,31 @@ git push
 <details><summary> Создание serviceUser k8s для настройки бэкапов и графаны </summary>
 
 <pre>
-$ gcloud iam service-accounts create serviceuser  - создаст пользователя serviceuser 
-Created service account [serviceuser].
+$ gcloud iam service-accounts create serviceuser  - создаст пользователя task8serviceuser 
+Created service account [task8serviceuser].
 
 
 соотнесем созданного пользователя с проектом и назначим ему нужные привилегии
-$ gcloud projects add-iam-policy-binding exadel-task-8 --member="serviceAccount:serviceuser@exadel-task-8.iam.gserviceaccount.com" --role="roles/owner"
+$ gcloud projects add-iam-policy-binding exadel-task-8 --member="serviceAccount:task8serviceuser@exadel-task-8.iam.gserviceaccount.com" --role="roles/owner"
 -----------
 Updated IAM policy for project [exadel-task-8].
 bindings:
 ...
 - members:
-  - serviceAccount:serviceuser@exadel-task-8.iam.gserviceaccount.com
+  - serviceAccount:task8serviceuser@exadel-task-8.iam.gserviceaccount.com
   - user:rekusha@gmail.com
   role: roles/owner
 ...
+etag: BwXIVswMbOY=
+version: 1
+
 -----------
 
 
 генерируем файл ключей для доступа соданного пользователя к проекту
-$ gcloud iam service-accounts keys create task8key.json --iam-account=serviceuser@exadel-task-8.iam.gserviceaccount.com
+$ gcloud iam service-accounts keys create task8key.json --iam-account=task8serviceuser@exadel-task-8.iam.gserviceaccount.com
 -----------
-created key [8afc59f7c32614db04f72eee4509ceab931a3878] of type [json] as [task8key.json] for [serviceuser@exadel-task-8.iam.gserviceaccount.com]
+created key [6667e5c0332c4427fd5e61f7a997e162d8ff65db] of type [json] as [task8key.json] for [task8serviceuser@exadel-task-8.iam.gserviceaccount.com]
 -----------
 
 
@@ -574,7 +577,7 @@ $ cat task8key.json
   "project_id": "exadel-task-8",
   "private_key_id": "8afc59f7c32614db04f72eee4509ceab931a3878",
   "private_key": "-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----",
-  "client_email": "serviceuser@exadel-task-8.iam.gserviceaccount.com",
+  "client_email": "task8serviceuser@exadel-task-8.iam.gserviceaccount.com",
   "client_id": "100352356826156311325",
   "auth_uri": "https://accounts.google.com/o/oauth2/auth",
   "token_uri": "https://oauth2.googleapis.com/token",
@@ -608,8 +611,8 @@ Creating gs://task8backup/...
 для того чтобы выполнять резервное копирование надо создать CronJob которая будет понимать заранее подготовленный докер образ и передавать ему переменные необходимые для монтирования корзины созданной шагом выше и создания дампа бд после подключения к нужному ресурсу. для этого создадим Dockerfile собирающий все необходимое в одном контейнере и скрипт выполняющий по сути монтирование корзины, создание и запись бэкапа в корзину, отмонтирование корзины
 
 <details><summary> Dockerfile</summary>	
-$ mkdir ~/task8/pgbackup  
-$ cd ~/task8/pgbackup  
+$ mkdir ~task8/exadel_task8/pgbackup2
+$ cd ~task8/exadel_task8/pgbackup2  
 $ nano Dockerfile  
 
 <pre>
@@ -659,6 +662,7 @@ exec fusermount -u $BACKUP_DIR
 $ docker login -u rekusha -p PASSWORD registry.gitlab.com
 $ docker build -t registry.gitlab.com/rekusha/exadel_task8/pgdump:latest ./
 $ docker push registry.gitlab.com/rekusha/exadel_task8/pgdump:latest
+cd ~/task8/exadel_task8
 </pre></details>
   
 	
