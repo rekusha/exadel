@@ -682,28 +682,27 @@ spec:
           containers:
           - name: postgres-backup 
             image: registry.gitlab.com/rekusha/exadel_task8/pgdump
-	    
 	    env:
-            - name: KEY_PATH
-              value: /var/secrets/key.json
-            - name: BASKET_NAME
-              value: task8backup
-            - name: SQL_USER
-	      valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.db.env.secret }}
-                  key: POSTGRES_USER
-            - name: SQL_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.db.env.secret }}
-                  key: POSTGRES_PASSWORD
-            - name: SQL_HOST
-              value: {{ .Values.db.service.name }}
-            - name: SQL_PORT
-              value: {{ .Values.app.env.sql_port }}
-            - name: SQL_DB
-              value: {{ .Values.db.env.postgres_db }}
+              - name: KEY_PATH
+                value: /var/secrets/key.json
+              - name: BASKET_NAME
+                value: task8backup
+              - name: SQL_USER
+	        valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.db.env.secret }}
+                    key: POSTGRES_USER
+              - name: SQL_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.db.env.secret }}
+                    key: POSTGRES_PASSWORD
+              - name: SQL_HOST
+                value: {{ .Values.db.service.name }}
+              - name: SQL_PORT
+                value: {{ .Values.app.env.sql_port }}
+              - name: SQL_DB
+                value: {{ .Values.db.env.postgres_db }}
             
             securityContext:
               privileged: true
