@@ -594,7 +594,7 @@ $ rm task8key.json - стираем файл ключей чтоб не утек
 
 
 
-<details><summary> grafana </summary>
+<details><summary> monitoring (prometheus + grafana) </summary>
 
 <pre>
 $ helm repo add stable https://charts.helm.sh/stable
