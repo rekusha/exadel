@@ -597,6 +597,10 @@ $ rm task8key.json - стираем файл ключей чтоб не утек
 <details><summary> grafana </summary>
 
 <pre>
+$ helm repo add stable https://charts.helm.sh/stable
+$ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+$ helm install stable prometheus-community/kube-prometheus-stack
+
 </pre>
 </details>
 
@@ -628,30 +632,10 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: {{ .Values.grafana.service.name }}
+            name: stable-grafana
             port:
-              number: {{ .Values.grafana.service.port }}
+              number: 80
   - host: "task8exadel.pp.ua"
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: {{ .Values.app.service.name }}
-            port:
-              number: {{ .Values.app.service.port }}
-  - host:
-    http:
-      paths:
-      - path: /monitoring
-        pathType: Prefix
-        backend:
-          service:
-            name: {{ .Values.grafana.service.name }}
-            port:
-              number: {{ .Values.grafana.service.port }}
-  - host: 
     http:
       paths:
       - path: /
