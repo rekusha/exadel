@@ -784,3 +784,9 @@ gcloud container clusters create <cluster-name> \
 </pre>	
 	
 </details>
+	
+<pre>
+git add . 
+git commit -m "finish push"
+git push
+</pre>
