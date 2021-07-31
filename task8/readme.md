@@ -89,6 +89,15 @@ $ gcloud container clusters create task8
 $ gcloud container clusters get-credentials task8 !!!!!!!!!!!!!!!!!!!!! подтягивает конфиг если он не подтянулся автоматом
 </pre></details>
 
+<details><summary> monitoring (prometheus + grafana) </summary>
+
+<pre>
+$ helm repo add stable https://charts.helm.sh/stable
+$ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+$ helm install stable prometheus-community/kube-prometheus-stack
+</pre>
+</details>
+
 <details><summary>подготовка рабочего окружения (файлов проекта)</summary>
 клонируем репозиторий на локальную машину  
   <pre>
@@ -592,17 +601,6 @@ $ rm task8key.json - стираем файл ключей чтоб не утек
 
 </pre></details>
 
-
-
-<details><summary> monitoring (prometheus + grafana) </summary>
-
-<pre>
-$ helm repo add stable https://charts.helm.sh/stable
-$ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-$ helm install stable prometheus-community/kube-prometheus-stack
-
-</pre>
-</details>
 
 <details><summary> ingaress controller & ingress rule </summary>
 
