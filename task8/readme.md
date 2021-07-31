@@ -25,7 +25,7 @@ $ sudo apt-get update
 $ sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
 $ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 $ echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-$ sudo apt-get update && sudo apt-get install docker-ce docker-ce-cli containerd.io
+$ sudo apt-get update && sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 $ sudo groupadd docker
 $ sudo usermod -aG docker $USER 
 $ sudo usermod -aG docker gitlab-runner
@@ -81,10 +81,11 @@ $ sudo apt install kubectl
 Устанавливаем Helm Charts: (на обеих машинах)
 $ wget https://get.helm.sh/helm-v3.6.3-linux-amd64.tar.gz
 $ tar -xf helm-v3.6.3-linux-amd64.tar.gz
-$ sudo mv linux-amd64/helm /bin/ && rm -rf /linux-amd64/ && rm helm-v3.6.3-linux-amd64.tar.gz
+$ sudo mv linux-amd64/helm /bin/ && rm -rf linux-amd64/ && rm helm-v3.6.3-linux-amd64.tar.gz
 
 создаем кластер:
 $ gcloud container clusters create task8
+
 
 $ gcloud container clusters get-credentials task8 !!!!!!!!!!!!!!!!!!!!! подтягивает конфиг если он не подтянулся автоматом
 </pre></details>
@@ -121,7 +122,7 @@ $ wagtail start app
 $ deactivate  
 $ rm -r venv/  
 
->>>> одной строкой: sudo apt update && sudo apt install python3-pip python3-venv && python3 -m venv venv && source venv/bin/activate && pip install --upgrade pip && pip install wagtail && wagtail start app && deactivate && rm -r venv/
+>>>> одной строкой: sudo apt update && sudo apt install -y python3-pip python3-venv && python3 -m venv venv && source venv/bin/activate && pip install --upgrade pip && pip install wagtail && wagtail start app && deactivate && rm -r venv/
 </pre>
 
   Добавим зависимость для работы прилодения с postgresql  
@@ -129,7 +130,7 @@ $ rm -r venv/
 $ echo 'psycopg2-binary==2.8.6' >> app/requirements.txt
 </pre>
 
-<details><summary>$ nano app/app/settings/base.py</summary>
+<details><summary>$ nano app/app/settings/base.py </summary>
 изменить секцию DATABASE на:
 <pre>
 DATABASES = {
@@ -185,7 +186,7 @@ FROM nginx:1.19.0-alpine
 COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 </pre></details>
 
-<details><summary> gitlab переменные окружения</summary>  
+<details><summary> gitlab переменные окружения </summary>  
 Для сборки и проверки работы нашего образа, нам понадобятся некоторые переменные, которые не зотелось бы светить в коде, поэтому добавим их в переменные окружения гитлаба
 <pre>
 settings - CI/CD - Variables - Add variable
@@ -193,7 +194,7 @@ SQL_USER: demouser
 SQL_PASSWORD: DemoPass
 POSTGRES_USER: demouser
 POSTGRES_PASSWORD: DemoPass
-SECRET_KEY: [Your SECRET_KEY]
+SECRET_KEY: [SECRET_KEY]
 </pre></details>
 	
 <details><summary>$ nano .gitlab-ci.yml (подготовка пайплайна для CI)</summary>
@@ -205,7 +206,7 @@ variables:
   APP_NAME: app
   CI_GROUP: rekusha
   CI_REP_NAME: exadel_task8
-  TEST_CONTAINER: container1 
+  TEST_CONTAINER: container1
   KUBER_CLUSTER_NAME: project8
   KUBER_PROJECT_NAME: app
 
@@ -219,14 +220,14 @@ build_job:
   script:
     - docker build -t $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:latest app/
   tags:
-     - shell2test
-     
+    - shell2test
+
 unit_test:
   stage: test
   script:
     - docker run -i --rm --env-file app/.env.test -p 8000:8000 $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:latest python3 manage.py test
   tags:
-     - shell2test
+    - shell2test
 
 status_code_test:
   stage: test
@@ -237,7 +238,6 @@ status_code_test:
     - echo $RESPONSE
     - docker stop $TEST_CONTAINER
     - if [ $RESPONSE -eq $STATUS_CODE ]; then echo 'app response is correct'; else echo 'Something is wrong'; exit 1; fi
-
   tags:
      - shell2test
 
@@ -249,16 +249,15 @@ push_to_repository:
     - docker tag $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:latest $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:$CI_COMMIT_SHORT_SHA
     - docker push $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:$CI_COMMIT_SHORT_SHA
   tags:
-     - shell2test
+    - shell2test
 
 deploy_to_gcloud:
   stage: deploy
   script:
     - kubectl get pods
-    - helm upgrade app project-deploy-helm/ --install --set secrets.SQL_USER=$SQL_USER,secrets.SQL_PASSWORD=$SQL_PASSWORD,secrets.POSTGRES_USER=$POSTGRES_USER,secrets.POSTGRES_PASSWORD=$POSTGRES_PASSWORD,secrets.SECRET_KEY=$SECRET_KEY
+    - helm upgrade app project-deploy-helm/ --install --set secrets.SQL_USER=$SQL_USER,secrets.SQL_PASSWORD=$SQL_PASSWORD,secrets.POSTGRES_USER=$POSTGRES_USER,secrets.POSTGRES_PASSWORD=$POSTGRES_PASSWORD,>
   tags:
      - shell2test
-
 </pre></details></details>
 
 <details><summary> Helm Chart </summary>
@@ -271,7 +270,7 @@ mkdir -p project-deploy-helm/templates
 <pre>
 apiVersion: v2
 name: Project-task8-Deploy
-description: Deploy with Kuber
+description: Deploy with Kuber by two jets
 type: application
 version: 0.1.0
 appVersion: "1.0"
@@ -284,6 +283,7 @@ maintainers:
    - giturl: https://gitlab.com/rekusha/exadel_task8
    - container_registory: https://gitlab.com/rekusha/exadel_task8/container_registry
 </pre></details>
+	
 <details><summary> nano project-deploy-helm/values.yaml </summary>
 	
 <pre>
@@ -324,15 +324,6 @@ app:
     resource:
       cpu: 90
 
-#grafana default values
-grafana: 
-  name: grafana
-  replicas: 1
-  service:
-    name: service-grafana
-    port: 3000
-    targetPort: 3000
-
 secrets:
   SQL_USER: user
   SQL_PASSWORD: password
@@ -341,6 +332,7 @@ secrets:
   SECRET_KEY: aslgkjaklgjf
 
 </pre></details>
+
 <details><summary> nano project-deploy-helm/templates/deployment.yaml </summary>
 	
 <pre>
@@ -363,6 +355,13 @@ spec:
       containers:
         - name: {{ .Values.db.name }}
           image: {{ .Values.containers.db_image }}
+          resources:
+            limits:
+              memory: "200Mi"
+              cpu: "0.5"
+            requests:
+              memory: "50Mi"
+              cpu: "0.1"
           volumeMounts:
             - name: {{ .Values.db.name }}-disk
               mountPath: /data
@@ -379,10 +378,6 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.db.env.secret }}
                   key: POSTGRES_PASSWORD
-        #    - name: POSTGRES_PASSWORD
-        #      value: testpassword
-        #    - name: PGDATA
-        #      value: /data/pgdata
   # Volume Claim
   volumeClaimTemplates:
     - metadata:
@@ -412,6 +407,13 @@ spec:
       containers:
         - name: {{ .Values.app.name }}
           image: {{ .Values.containers.app_image }}
+          resources:
+            limits:
+              memory: "200Mi"
+              cpu: "0.5"
+            requests:
+              memory: "50Mi"
+              cpu: "0.1"
           env:
             - name: DEBUG
               value: {{ .Values.app.env.debug }}
@@ -436,26 +438,6 @@ spec:
             - name: SQL_PORT
               value: {{ .Values.app.env.sql_port }}
 
----
-# Grafana Deployment
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: {{ .Values.grafana.name }}
-spec:
-  selector:
-    matchLabels:
-      project: {{ .Values.grafana.name }}
-  replicas: {{ .Values.grafana.replicas }}
-  template: 
-    metadata:
-      labels:
-        project: {{ .Values.grafana.name }}
-    spec:
-      containers:
-        - name: {{ .Values.grafana.name }}
-          image: {{ .Values.containers.grafana_image }}    
-
 </pre></details>
 <details><summary> nano project-deploy-helm/templates/hpa-v2.yaml </summary>
 
@@ -477,6 +459,7 @@ spec:
       name: cpu
       targetAverageUtilization: {{ .Values.app.hpa.resource.cpu }}
 </pre></details>
+
 <details><summary> nano project-deploy-helm/templates/secret.yaml </summary>
 <pre>
 ---
@@ -493,6 +476,7 @@ data:
   SECRET_KEY: {{ .Values.secrets.SECRET_KEY | b64enc }}
 
 </pre></details>
+
 <details><summary> nano project-deploy-helm/templates/service.yaml </summary>
 	
 <pre>
@@ -504,16 +488,17 @@ metadata:
 spec:
   selector:
     app: {{ .Values.db.name }}
-  type: LoadBalancer
+  type: ClusterIP
   ports:
     - port: {{ .Values.db.service.port }}
-      targetPort: {{ .Values.db.service.targetPort }}
 
 --- 
 apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Values.app.service.name }}
+  annotations:
+    networking.gke.io/load-balancer-type: "Internal"
 spec:
   selector:
     project: {{ .Values.app.name }}
@@ -521,19 +506,6 @@ spec:
   ports:
     - port: {{ .Values.app.service.port }}
       targetPort: {{ .Values.app.service.targetPort }}
-
---- 
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{ .Values.grafana.service.name }}
-spec:
-  selector:
-    project: {{ .Values.grafana.name }}
-  type: LoadBalancer
-  ports:
-    - port: {{ .Values.grafana.service.port }}
-      targetPort: {{ .Values.grafana.service.targetPort }}
 
 </pre></details></details>
 	
@@ -545,7 +517,7 @@ git commit -m "push files to repo"
 git push
 </pre>
 
-на данном этапе у нас поднимается постгрес(готовый к работе), вагтэйл(еоннектится к постгресу) и графана(пока не настроенная)  
+на данном этапе у нас поднимается постгрес(готовый к работе) и вагтэйл(коннектится к постгресу) 
 
 <details><summary> Создание serviceUser k8s для настройки бэкапов и графаны </summary>
 
@@ -578,8 +550,7 @@ created key [6667e5c0332c4427fd5e61f7a997e162d8ff65db] of type [json] as [task8k
 -----------
 
 
-в итоге у нас есть файл с кредами для аутентификации от имени созданного пользователя
-$ cat task8key.json
+в итоге у нас есть файл с кредами для аутентификации от имени созданного пользователя task8key.json
 -----------
 {
   "type": "service_account",
@@ -660,9 +631,8 @@ Creating gs://task8backup/...
 для того чтобы выполнять резервное копирование надо создать CronJob которая будет понимать заранее подготовленный докер образ и передавать ему переменные необходимые для монтирования корзины созданной шагом выше и создания дампа бд после подключения к нужному ресурсу. для этого создадим Dockerfile собирающий все необходимое в одном контейнере и скрипт выполняющий по сути монтирование корзины, создание и запись бэкапа в корзину, отмонтирование корзины
 
 <details><summary> Dockerfile</summary>	
-$ mkdir ~task8/exadel_task8/pgbackup2
-$ cd ~task8/exadel_task8/pgbackup2  
-$ nano Dockerfile  
+$ mkdir pgbackup2
+$ nano pgbackup2/Dockerfile  
 
 <pre>
 FROM ubuntu:20.04
@@ -695,7 +665,7 @@ ENTRYPOINT ["/home/postgres/docker-entrypoint.sh"]
 </pre></details>
 
 	
-<details><summary> docker-entrypoint.sh</summary>
+<details><summary> nano pgbackup2/docker-entrypoint.sh </summary>
 
 <pre>
 #!/bin/bash
@@ -703,19 +673,21 @@ mkdir $BACKUP_DIR
 gcsfuse --key-file=$KEY_PATH $BASKET_NAME $BACKUP_DIR
 pg_dump --dbname=postgresql://$SQL_USER:$SQL_PASSWORD@$SQL_HOST:$SQL_PORT/$SQL_DB > $BACKUP_DIR/"$SQL_DB-$(date -u +"%FT%H%MZ").sql"
 exec fusermount -u $BACKUP_DIR
-</pre></details>
+</pre>
+
+$ chmod 777 pgbackup2/docker-entrypoint.sh
+</details>
 
 <details><summary> собираем образ и пушим его в репозиторий </summary>
 	
 <pre>
 $ docker login -u rekusha -p PASSWORD registry.gitlab.com
-$ docker build -t registry.gitlab.com/rekusha/exadel_task8/pgdump:latest ./
+$ docker build -t registry.gitlab.com/rekusha/exadel_task8/pgdump:latest pgbackup2/
 $ docker push registry.gitlab.com/rekusha/exadel_task8/pgdump:latest
-cd ~/task8/exadel_task8
 </pre></details>
   
 	
-<details><summary> $ nano project-deploy-helm/templates/postgresql-cloud-dump.yaml</summary>
+<details><summary> $ nano project-deploy-helm/templates/postgresql-cloud-dump.yaml </summary>
 	
 <pre>
 apiVersion: batch/v1beta1
@@ -723,7 +695,7 @@ kind: CronJob
 metadata:
   name: postgres-backup
 spec:
-  schedule: "0 /2 * * *"
+  schedule: "0 */2 * * *"
   successfulJobsHistoryLimit: 0
   failedJobsHistoryLimit: 0
   jobTemplate:
@@ -731,15 +703,22 @@ spec:
       template:
         spec:
           containers:
-          - name: postgres-backup 
+          - name: postgres-backup
+            resources:
+              limits:
+                memory: "200Mi"
+                cpu: "0.5"
+              requests:
+                memory: "50Mi"
+                cpu: "0.1"
             image: registry.gitlab.com/rekusha/exadel_task8/pgdump
-	    env:
+            env:
               - name: KEY_PATH
                 value: /var/secrets/key.json
               - name: BASKET_NAME
                 value: task8backup
               - name: SQL_USER
-	        valueFrom:
+                valueFrom:
                   secretKeyRef:
                     name: {{ .Values.db.env.secret }}
                     key: POSTGRES_USER
@@ -754,21 +733,19 @@ spec:
                 value: {{ .Values.app.env.sql_port }}
               - name: SQL_DB
                 value: {{ .Values.db.env.postgres_db }}
-            
             securityContext:
               privileged: true
               capabilities:
                 add: ["SYS_ADMIN"]
-		
             volumeMounts:
               - name: secret-volume
                 mountPath: /var/secrets
-		
           restartPolicy: Never
           volumes:
             - name: secret-volume
               secret:
                 secretName: task8backup
+
 </pre></details>
 
 </details>
