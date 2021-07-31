@@ -587,7 +587,8 @@ $ cat task8key.json
 -----------
 
 
-kubectl create secret generic task8backup --from-file=key.json=task8key.json (копируем ключи в секреты кубернетиса)
+$ kubectl create secret generic task8backup --from-file=key.json=task8key.json (копируем ключи в секреты кубернетиса)
+$ rm task8key.json - стираем файл ключей чтоб не утекли случайно
 
 </pre></details>
 
@@ -596,12 +597,78 @@ kubectl create secret generic task8backup --from-file=key.json=task8key.json (к
 <details><summary> grafana </summary>
 
 <pre>
+</pre>
+</details>
 
-</pre></details>
+<details><summary> ingaress controller & ingress rule </summary>
+
+если просто - то:
+
+<pre>
+$ kubectl create clusterrolebinding cluster-admin-binding --clusterrole cluster-admin --user $(gcloud config get-value account)
+$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.48.1/deploy/static/provider/cloud/deploy.yaml
+</pre>
+	
+этим финтом мы присвоим нужные роли аккаунту (нашему) и установим из репозитория под самого контроллера, сервис и внешний лоад балансер  
+останется лишь создать ингресс в котором описать правила маршрутизации трафика устраивающие нас
+
+<details><summary> nano project-deploy-helm/templates/ingress.yaml </summary>
+	
+<pre>
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-wildcard-host
+spec:
+  rules:
+  - host: "grafana.task8exadel.pp.ua"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.grafana.service.name }}
+            port:
+              number: {{ .Values.grafana.service.port }}
+  - host: "task8exadel.pp.ua"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.app.service.name }}
+            port:
+              number: {{ .Values.app.service.port }}
+  - host:
+    http:
+      paths:
+      - path: /monitoring
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.grafana.service.name }}
+            port:
+              number: {{ .Values.grafana.service.port }}
+  - host: 
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.app.service.name }}
+            port:
+              number: {{ .Values.app.service.port }}
+</pre>
+</details>
+
+</details>
 
 
 <details><summary> postgres backup </summary>
-
+	
 <pre>
 Для хранения бэкапов следует создать корзину
 $ gsutil mb -l europe-west4 gs://task8backup
@@ -720,5 +787,7 @@ spec:
             - name: secret-volume
               secret:
                 secretName: task8backup
-</pre></details></details>
+</pre></details>
+
+</details>
 
