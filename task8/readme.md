@@ -84,8 +84,47 @@ $ tar -xf helm-v3.6.3-linux-amd64.tar.gz
 $ sudo mv linux-amd64/helm /bin/ && rm -rf linux-amd64/ && rm helm-v3.6.3-linux-amd64.tar.gz
 
 создаем кластер:
-$ gcloud container clusters create task8
+$ gcloud container clusters create task8  
+  
+создаем нэймспейсы для dev, prod, qa, monitoring  
+nano namespc.yaml  
+<pre>
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev
+  labels: 
+    name: development
 
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: qa
+  labels: 
+    name: testing
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: prod
+  labels: 
+    name: production
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels: 
+    name: monitoring
+</pre>
+
+<pre>
+$  
+</pre>
 
 $ gcloud container clusters get-credentials task8 !!!!!!!!!!!!!!!!!!!!! подтягивает конфиг если он не подтянулся автоматом
 </pre></details>
@@ -95,8 +134,30 @@ $ gcloud container clusters get-credentials task8 !!!!!!!!!!!!!!!!!!!!! подт
 <pre>
 $ helm repo add stable https://charts.helm.sh/stable
 $ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-$ helm install stable prometheus-community/kube-prometheus-stack
+$ helm install stable prometheus-community/kube-prometheus-stack -n monitoring
 </pre>
+	
+$ nano monitor-ingress.yaml
+<pre>
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-grafana
+spec:
+  rules:
+  - host: "grafana.task8exadel.pp.ua"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: stable-grafana
+            port:
+              number: 80
+</pre>
+$ kubectl apply -f monitor-ingress.yaml -n monitoring
+	
 </details>
 
 <details><summary>подготовка рабочего окружения (файлов проекта)</summary>
@@ -161,30 +222,6 @@ SQL_USER=$SQL_USER
 SQL_PASSWORD=$SQL_PASSWORD
 </pre></details>
 
-<details><summary> подготовка контейнера nginx (думаю потом можно будет перенести настройку в кубернетис с помощю конфигов)</summary>
-<pre>
-$ mkdir -p config/nginx
-$ nano config/nginx/nginx.conf
-</pre>
-
-<pre>
-upstream app {server app:8000;}
-
-server {listen 80;
-	location / {proxy_pass http://app;}
-#	location /static/ {alias /home/app/static/;}
-}
-</pre>
-
-<pre>
-$ nano config/nginx/Dockerfile
-</pre>
-
-<pre>
-FROM nginx:1.19.0-alpine
-
-COPY ./nginx.conf /etc/nginx/conf.d/default.conf
-</pre></details>
 
 <details><summary> gitlab переменные окружения </summary>  
 Для сборки и проверки работы нашего образа, нам понадобятся некоторые переменные, которые не зотелось бы светить в коде, поэтому добавим их в переменные окружения гитлаба
@@ -213,7 +250,9 @@ variables:
 stages:
   - build
   - test
+  - artifact
   - deploy
+  - production
 
 build_job:
   stage: build
@@ -228,6 +267,8 @@ unit_test:
     - docker run -i --rm --env-file app/.env.test -p 8000:8000 $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:latest python3 manage.py test
   tags:
     - shell2test
+  needs:
+    - build_job
 
 status_code_test:
   stage: test
@@ -240,9 +281,11 @@ status_code_test:
     - if [ $RESPONSE -eq $STATUS_CODE ]; then echo 'app response is correct'; else echo 'Something is wrong'; exit 1; fi
   tags:
      - shell2test
+  needs:
+    - build_job
 
 push_to_repository:
-  stage: deploy
+  stage: artifact
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker push $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:latest
@@ -250,14 +293,33 @@ push_to_repository:
     - docker push $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:$CI_COMMIT_SHORT_SHA
   tags:
     - shell2test
+  needs:
+    - unit_test
+    - status_code_test
 
-deploy_to_gcloud:
+deploy_to_cloud:
   stage: deploy
   script:
-    - kubectl get pods
+    # deploy for dev team
     - helm upgrade app project-deploy-helm/ --install --set secrets.SQL_USER=$SQL_USER,secrets.SQL_PASSWORD=$SQL_PASSWORD,secrets.POSTGRES_USER=$POSTGRES_USER,secrets.POSTGRES_PASSWORD=$POSTGRES_PASSWORD,>
+    # deploy for QA team
+    - helm upgrade app project-deploy-helm/ --install --set secrets.SQL_USER=$SQL_USER,secrets.SQL_PASSWORD=$SQL_PASSWORD,secrets.POSTGRES_USER=$POSTGRES_USER,secrets.POSTGRES_PASSWORD=$POSTGRES_PASSWORD,>
+  needs:
+    - push_to_repository
   tags:
      - shell2test
+
+deploy_to_prod:
+  stage: production
+  script:
+    #deploy to prod
+    - helm upgrade app project-deploy-helm/ --install --set secrets.SQL_USER=$SQL_USER,secrets.SQL_PASSWORD=$SQL_PASSWORD,secrets.POSTGRES_USER=$POSTGRES_USER,secrets.POSTGRES_PASSWORD=$POSTGRES_PASSWORD,>
+  needs:
+    - deploy_to_cloud
+  when: manual
+  tags:
+     - shell2test
+
 </pre></details></details>
 
 <details><summary> Helm Chart </summary>
@@ -330,6 +392,9 @@ secrets:
   POSTGRES_USER: user
   POSTGRES_PASSWORD: password
   SECRET_KEY: aslgkjaklgjf
+
+deploy:
+  host:
 
 </pre></details>
 
@@ -595,17 +660,7 @@ metadata:
   name: ingress-wildcard-host
 spec:
   rules:
-  - host: "grafana.task8exadel.pp.ua"
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: stable-grafana
-            port:
-              number: 80
-  - host: "task8exadel.pp.ua"
+  - host: "{{ .Values.deploy.host }}task8exadel.pp.ua"
     http:
       paths:
       - path: /
@@ -617,7 +672,7 @@ spec:
               number: {{ .Values.app.service.port }}
 </pre>
 </details>
-
+	
 </details>
 
 
