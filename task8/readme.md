@@ -568,7 +568,7 @@ created key [6667e5c0332c4427fd5e61f7a997e162d8ff65db] of type [json] as [task8k
 -----------
 
 
-$ kubectl create secret generic task8backup --from-file=key.json=task8key.json (копируем ключи в секреты кубернетиса)
+$ kubectl create secret generic task8backup --from-file=key.json=task8key.json -n dev (копируем ключи в секреты кубернетиса под каждый нэймспйс отдельно!)
 $ rm task8key.json - стираем файл ключей чтоб не утекли случайно
 
 </pre></details>
