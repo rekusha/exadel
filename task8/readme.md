@@ -850,3 +850,40 @@ git add .
 git commit -m "finish push"
 git push
 </pre>
+	
+
+<details><summary> Alerting </summary>
+
+дальнейшие действия проделываются на вэб ресурсе Google Cloud Platform (GCP)
+	
+<pre>
+GCP - OPERATIONS - MONITORING - Alerting
+Notification channels
+Email - add new 
+указываем мэйл куда направлять алерты (+ отображаемое имя (опционально))
+
+
+GCP - OPERATIONS - Logging - logs explorer
+
+RESOURCE-TYPE - Kubernetes Cluster
+CLUSTER NAME - task8
+edit query - Severity:
+                   - Emergency
+                   - Alert
+                   - Critical
+                   - Error
+			>> Add <<
+Run Query
+Action - Create log alert
+Alert Name: Alert_task8_cluster
+Alert Description: Vse propalo!!!
+Next
+Next
+Set time between notifications - 5min
+Next
+Who should be notified? (optional)
+из выпадающего меню выбираем кому рассылать
+SAVE
+
+</pre>
+</details>
