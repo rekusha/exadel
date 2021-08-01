@@ -1,0 +1,47 @@
+#docker images:
+containers:
+  db_image: postgres:latest
+  app_image: registry.gitlab.com/rekusha/exadel_task8/app
+
+commit: latest
+
+#db default values 
+db: 
+  name: postgresql-db
+  replicas: 1
+  storage: 1Gi 
+  env:
+    postgres_db: demo_wagtail
+    secret: task8-secret
+  service:
+    name: service-postgresql-db
+    port: 5432
+    targetPort: 5432
+
+#wagtail default values 
+app:
+  name: wagtail
+  env:
+    sql_engine: django.db.backends.postgresql_psycopg2
+    debug: '"true"'
+    allowed_hosts: localhost 127.0.0.1 [::1]
+    sql_port: '"5432"'
+  service:
+    name: service-wagtail
+    port: 8000
+    targetPort: 8000
+  hpa:  
+    minReplicas: 2
+    maxReplicas: 4
+    resource:
+      cpu: 90
+
+secrets:
+  SQL_USER: user
+  SQL_PASSWORD: password
+  POSTGRES_USER: user
+  POSTGRES_PASSWORD: password
+  SECRET_KEY: aslgkjaklgjf
+
+deploy:
+  host:

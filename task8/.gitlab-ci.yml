@@ -1,0 +1,82 @@
+variables:
+  RUNNNER_INSTANCE_URL: http://localhost:8000/
+  STATUS_CODE: '200'
+  APP_NAME: app
+  CI_GROUP: rekusha
+  CI_REP_NAME: exadel_task8
+  TEST_CONTAINER: container1 
+  KUBER_CLUSTER_NAME: project8
+  KUBER_PROJECT_NAME: app
+
+stages:
+  - build
+  - test
+  - artifact
+  - deploy
+  - production
+
+build_job:
+  stage: build
+  script:
+    - docker build -t $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:latest app/
+  tags:
+    - shell2test
+     
+unit_test:
+  stage: test
+  script:
+    - docker run -i --rm --env-file app/.env.test -p 8000:8000 $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:latest python3 manage.py test
+  tags:
+    - shell2test
+  needs:
+    - build_job
+
+status_code_test:
+  stage: test
+  script:
+    - docker run -d --rm --env-file app/.env.test -p 8000:8000 --name $TEST_CONTAINER $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:latest
+    - sleep 20
+    - export RESPONSE=$(curl --write-out "%{http_code}\n" --silent --output /dev/null $RUNNNER_INSTANCE_URL)
+    - echo $RESPONSE
+    - docker stop $TEST_CONTAINER
+    - if [ $RESPONSE -eq $STATUS_CODE ]; then echo 'app response is correct'; else echo 'Something is wrong'; exit 1; fi
+  tags:
+     - shell2test
+  needs: 
+    - build_job
+
+push_to_repository:
+  stage: artifact
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker push $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:latest
+    - docker tag $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:latest $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:$CI_COMMIT_SHORT_SHA
+    - docker push $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:$CI_COMMIT_SHORT_SHA
+  tags:
+    - shell2test
+  needs:
+    - unit_test
+    - status_code_test
+
+deploy_to_cloud:
+  stage: deploy
+  script:
+    # deploy for dev team
+    - helm upgrade app project-deploy-helm/ --install --set commit=$CI_COMMIT_SHORT_SHA,secrets.SQL_USER=$SQL_USER,secrets.SQL_PASSWORD=$SQL_PASSWORD,secrets.POSTGRES_USER=$POSTGRES_USER,secrets.POSTGRES_PASSWORD=$POSTGRES_PASSWORD,secrets.SECRET_KEY=$SECRET_KEY,deploy.host=dev. -n dev
+    # deploy for QA team
+    - helm upgrade app project-deploy-helm/ --install --set commit=$CI_COMMIT_SHORT_SHA,secrets.SQL_USER=$SQL_USER,secrets.SQL_PASSWORD=$SQL_PASSWORD,secrets.POSTGRES_USER=$POSTGRES_USER,secrets.POSTGRES_PASSWORD=$POSTGRES_PASSWORD,secrets.SECRET_KEY=$SECRET_KEY,deploy.host=qa. -n qa
+  needs:
+    - push_to_repository 
+  tags:
+     - shell2test
+
+deploy_to_prod:
+  stage: production
+  script:
+    #deploy to prod
+    - helm upgrade app project-deploy-helm/ --install --set commit=$CI_COMMIT_SHORT_SHA,secrets.SQL_USER=$SQL_USER,secrets.SQL_PASSWORD=$SQL_PASSWORD,secrets.POSTGRES_USER=$POSTGRES_USER,secrets.POSTGRES_PASSWORD=$POSTGRES_PASSWORD,secrets.SECRET_KEY=$SECRET_KEY -n prod
+  needs:
+    - deploy_to_cloud  
+  when: manual
+  tags:
+     - shell2test

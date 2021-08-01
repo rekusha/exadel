@@ -1,0 +1,102 @@
+# PostgreSQL StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.db.name }}
+spec:
+  serviceName: {{ .Values.db.name }}-service
+  selector:
+    matchLabels:
+      app: {{ .Values.db.name }}
+  replicas: {{ .Values.db.replicas }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.db.name }}
+    spec:
+      containers:
+        - name: {{ .Values.db.name }}
+          image: {{ .Values.containers.db_image }}
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: "200Mi"
+              cpu: "0.5"
+            requests:
+              memory: "50Mi"
+              cpu: "0.1"
+          volumeMounts:
+            - name: {{ .Values.db.name }}-disk
+              mountPath: /data
+          env:
+            - name: POSTGRES_DB
+              value: {{ .Values.db.env.postgres_db }}
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.db.env.secret }}
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.db.env.secret }}
+                  key: POSTGRES_PASSWORD
+  # Volume Claim
+  volumeClaimTemplates:
+    - metadata:
+        name: {{ .Values.db.name }}-disk
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.db.storage }}
+
+--- 
+# wagtail Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.app.name }}
+spec:
+  selector:
+    matchLabels:
+      project: {{ .Values.app.name }}
+  template: 
+    metadata:
+      labels:
+        project: {{ .Values.app.name }}
+    spec:
+      containers:
+        - name: {{ .Values.app.name }}
+          image: {{ .Values.containers.app_image }}:{{ .Values.commit }}
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: "200Mi"
+              cpu: "0.5"
+            requests:
+              memory: "50Mi"
+              cpu: "0.1"
+          env:
+            - name: DEBUG
+              value: {{ .Values.app.env.debug }}
+            - name: DJANGO_ALLOWED_HOSTS
+              value: {{ .Values.app.env.allowed_hosts }}
+            - name: SQL_ENGINE
+              value: {{ .Values.app.env.sql_engine }}
+            - name: SQL_DATABASE
+              value: {{ .Values.db.env.postgres_db }}
+            - name: SQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.db.env.secret }}
+                  key: SQL_USER
+            - name: SQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.db.env.secret }}
+                  key: SQL_PASSWORD
+            - name: SQL_HOST
+              value: {{ .Values.db.service.name }}
+            - name: SQL_PORT
+              value: {{ .Values.app.env.sql_port }}

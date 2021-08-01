@@ -1,0 +1,57 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: postgres-backup
+spec:
+  schedule: "0 */2 * * *"
+  successfulJobsHistoryLimit: 0
+  failedJobsHistoryLimit: 0
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: postgres-backup 
+            resources:
+              limits:
+                memory: "200Mi"
+                cpu: "0.5"
+              requests:
+                memory: "50Mi"
+                cpu: "0.1"
+            image: registry.gitlab.com/rekusha/exadel_task8/pgdump
+            env:
+              - name: ENV_NSP
+                value: {{ .Values.deploy.host }}
+              - name: KEY_PATH
+                value: /var/secrets/key.json
+              - name: BASKET_NAME
+                value: task8backup
+              - name: SQL_USER
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.db.env.secret }}
+                    key: POSTGRES_USER
+              - name: SQL_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.db.env.secret }}
+                    key: POSTGRES_PASSWORD
+              - name: SQL_HOST
+                value: {{ .Values.db.service.name }}
+              - name: SQL_PORT
+                value: {{ .Values.app.env.sql_port }}
+              - name: SQL_DB
+                value: {{ .Values.db.env.postgres_db }}
+            securityContext:
+              privileged: true
+              capabilities:
+                add: ["SYS_ADMIN"]
+            volumeMounts:
+              - name: secret-volume
+                mountPath: /var/secrets
+          restartPolicy: Never
+          volumes:
+            - name: secret-volume
+              secret:
+                secretName: task8backup
