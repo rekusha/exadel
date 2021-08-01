@@ -522,12 +522,13 @@ git push
 <details><summary> Создание serviceUser k8s для настройки бэкапов и графаны </summary>
 
 <pre>
-$ gcloud iam service-accounts create serviceuser  - создаст пользователя task8serviceuser 
+$ gcloud iam service-accounts create task8serviceuser  - создаст пользователя task8serviceuser 
 Created service account [task8serviceuser].
 
 
 соотнесем созданного пользователя с проектом и назначим ему нужные привилегии
 $ gcloud projects add-iam-policy-binding exadel-task-8 --member="serviceAccount:task8serviceuser@exadel-task-8.iam.gserviceaccount.com" --role="roles/owner"
+здесь exadel-task-8 - это ИД проэкта 
 -----------
 Updated IAM policy for project [exadel-task-8].
 bindings:
