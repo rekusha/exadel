@@ -729,7 +729,7 @@ ENTRYPOINT ["/home/postgres/docker-entrypoint.sh"]
 #!/bin/bash
 mkdir $BACKUP_DIR
 gcsfuse --key-file=$KEY_PATH $BASKET_NAME $BACKUP_DIR
-pg_dump --dbname=postgresql://$SQL_USER:$SQL_PASSWORD@$SQL_HOST:$SQL_PORT/$SQL_DB > $BACKUP_DIR/"$SQL_DB-$(date -u +"%FT%H%MZ").sql"
+pg_dump --dbname=postgresql://$SQL_USER:$SQL_PASSWORD@$SQL_HOST:$SQL_PORT/$SQL_DB > $BACKUP_DIR/"$SQL_DB-$ENV_NSP$(date -u +"%FT%H%MZ").sql"
 exec fusermount -u $BACKUP_DIR
 </pre>
 
@@ -771,6 +771,8 @@ spec:
                 cpu: "0.1"
             image: registry.gitlab.com/rekusha/exadel_task8/pgdump
             env:
+	      - name: ENV_NSP
+                value: {{ .Values.deploy.host }}
               - name: KEY_PATH
                 value: /var/secrets/key.json
               - name: BASKET_NAME
