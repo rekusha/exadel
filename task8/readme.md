@@ -243,7 +243,7 @@ variables:
   APP_NAME: app
   CI_GROUP: rekusha
   CI_REP_NAME: exadel_task8
-  TEST_CONTAINER: container1
+  TEST_CONTAINER: container1 
   KUBER_CLUSTER_NAME: project8
   KUBER_PROJECT_NAME: app
 
@@ -260,7 +260,7 @@ build_job:
     - docker build -t $CI_REGISTRY/$CI_GROUP/$CI_REP_NAME/$APP_NAME:latest app/
   tags:
     - shell2test
-
+     
 unit_test:
   stage: test
   script:
@@ -281,7 +281,7 @@ status_code_test:
     - if [ $RESPONSE -eq $STATUS_CODE ]; then echo 'app response is correct'; else echo 'Something is wrong'; exit 1; fi
   tags:
      - shell2test
-  needs:
+  needs: 
     - build_job
 
 push_to_repository:
@@ -301,11 +301,11 @@ deploy_to_cloud:
   stage: deploy
   script:
     # deploy for dev team
-    - helm upgrade app project-deploy-helm/ --install --set secrets.SQL_USER=$SQL_USER,secrets.SQL_PASSWORD=$SQL_PASSWORD,secrets.POSTGRES_USER=$POSTGRES_USER,secrets.POSTGRES_PASSWORD=$POSTGRES_PASSWORD,>
+    - helm upgrade app project-deploy-helm/ --install --set commit=$CI_COMMIT_SHORT_SHA,secrets.SQL_USER=$SQL_USER,secrets.SQL_PASSWORD=$SQL_PASSWORD,secrets.POSTGRES_USER=$POSTGRES_USER,secrets.POSTGRES_PASSWORD=$POSTGRES_PASSWORD,secrets.SECRET_KEY=$SECRET_KEY,deploy.host=dev. -n dev
     # deploy for QA team
-    - helm upgrade app project-deploy-helm/ --install --set secrets.SQL_USER=$SQL_USER,secrets.SQL_PASSWORD=$SQL_PASSWORD,secrets.POSTGRES_USER=$POSTGRES_USER,secrets.POSTGRES_PASSWORD=$POSTGRES_PASSWORD,>
+    - helm upgrade app project-deploy-helm/ --install --set commit=$CI_COMMIT_SHORT_SHA,secrets.SQL_USER=$SQL_USER,secrets.SQL_PASSWORD=$SQL_PASSWORD,secrets.POSTGRES_USER=$POSTGRES_USER,secrets.POSTGRES_PASSWORD=$POSTGRES_PASSWORD,secrets.SECRET_KEY=$SECRET_KEY,deploy.host=qa. -n qa
   needs:
-    - push_to_repository
+    - push_to_repository 
   tags:
      - shell2test
 
@@ -313,12 +313,13 @@ deploy_to_prod:
   stage: production
   script:
     #deploy to prod
-    - helm upgrade app project-deploy-helm/ --install --set secrets.SQL_USER=$SQL_USER,secrets.SQL_PASSWORD=$SQL_PASSWORD,secrets.POSTGRES_USER=$POSTGRES_USER,secrets.POSTGRES_PASSWORD=$POSTGRES_PASSWORD,>
+    - helm upgrade app project-deploy-helm/ --install --set commit=$CI_COMMIT_SHORT_SHA,secrets.SQL_USER=$SQL_USER,secrets.SQL_PASSWORD=$SQL_PASSWORD,secrets.POSTGRES_USER=$POSTGRES_USER,secrets.POSTGRES_PASSWORD=$POSTGRES_PASSWORD,secrets.SECRET_KEY=$SECRET_KEY -n prod
   needs:
-    - deploy_to_cloud
+    - deploy_to_cloud  
   when: manual
   tags:
      - shell2test
+
 
 </pre></details></details>
 
@@ -353,7 +354,8 @@ maintainers:
 containers:
   db_image: postgres:latest
   app_image: registry.gitlab.com/rekusha/exadel_task8/app
-  grafana_image: grafana/grafana
+  
+commit: latest
 
 #db default values 
 db: 
@@ -471,7 +473,7 @@ spec:
     spec:
       containers:
         - name: {{ .Values.app.name }}
-          image: {{ .Values.containers.app_image }}
+          image: {{ .Values.containers.app_image }}:{{ .Values.commit }}
           resources:
             limits:
               memory: "200Mi"
