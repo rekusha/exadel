@@ -31,3 +31,4 @@ https://www.youtube.com/watch?v=O1_--7IvP5g&list=PLg5SS_4L6LYsxrZ_4xE_U95AtGsIB9
 *****  
 Результатом выполнения задания является ссылка в вашем github на web страницу “Hello World” в AWS. После проверки задания ментором,  instance нужно удалить. EXTRA таски сдаются менторам индивидуально. 
 
+ 
