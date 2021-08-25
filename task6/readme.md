@@ -274,3 +274,4 @@ services:
  sudo docker exec -it postgresql_01 su - postgres -c "psql -c 'select * from pg_stat_replication;'"
  sudo docker exec -it postgresql_02 su - postgres -c "psql -c 'select * from pg_stat_wal_receiver;'"
  ```
+ 
