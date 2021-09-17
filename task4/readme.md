@@ -1,3 +1,6 @@
+использование ансибл без создания инвентори файла
+ansible all -i xx.xx.xx.xx, -m ping -u username --private-key /path/to/key_file
+
 # Task 4: Ansible for beginners  
 ## Важные моменты:  
   
