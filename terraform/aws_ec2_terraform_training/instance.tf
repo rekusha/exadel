@@ -12,6 +12,13 @@ resource "aws_instance" "ubuntu" {
 
   # user data it is data what's doing after instance create
   user_data = file("ubuntu_webserver.sh")
+
+
+  lifecycle {
+    prevent_destroy       = false            # prevent desroy - defense for server from destroy
+    ignore_changes        = [ami, user_data] # prevent change data of data in brackets
+    create_before_destroy = true             # create new instance with new data befor kill old instance 
+  }
 }
 
 # --------------------------------------------------------------------------
